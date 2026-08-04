@@ -1,0 +1,29 @@
+id: https://w3id.org/silicokg/source/ncbi/gene-summary
+name: ncbi-gene-summary
+title: NCBI Gene Summary Source Schemas
+prefixes:
+  path: https://w3id.org/silicokg/
+default_prefix: silkg
+
+classes:
+  NCBIGeneSummaryRow:
+    description: >
+      A row representing an entity node in the NCBI Gene Summary resource.
+      https://ftp.ncbi.nlm.nih.gov/gene/DATA/gene_summary.gz
+    attributes:
+      tax_id:
+        range: string
+        annotations:
+          path:publisher_header: "tax_id"
+      gene_id:
+        range: string
+        annotations:
+          path:publisher_header: "GeneID"
+      source:
+        range: string
+        annotations:
+          path:publisher_header: "Source"
+      summary:
+        range: string
+        annotations:
+          path:publisher_header: "Summary"

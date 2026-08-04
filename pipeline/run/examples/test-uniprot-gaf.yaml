@@ -1,0 +1,19 @@
+run_id: test-uniprot-gaf
+sources:
+  - source: uniprot
+    source_name: uniprot-gaf
+stages:
+  - ingest
+  - validate
+  - transform
+  - integrate
+  - publish
+
+snapshot_raw: false
+
+transform:
+  parallel_sources: false
+  workers: 1
+
+publish:
+  schema: schemas/domain/silicokg.yaml

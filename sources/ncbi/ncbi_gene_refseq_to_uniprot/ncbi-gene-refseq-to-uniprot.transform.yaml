@@ -1,0 +1,27 @@
+id: https://w3id.org/silicokg/transform/ncbi/gene-refseq-to-uniprot
+title: NCBI Gene RefSeq to UniProt Transform
+prefixes:
+  silkg: https://w3id.org/silicokg/
+
+class_derivations:
+  Protein:
+    populated_from: NCBIGeneRefSeqToUniProtRow
+    slot_derivations:
+      id:
+        expr: "'silkg:Protein:' + str(uniprot_tax_id) + ':' + str(uniprot_accession)"
+      protein_accession_version:
+        expr: "uniprot_accession"
+
+  NCBIGeneRefSeqToUniProtEdge:
+    populated_from: NCBIGeneRefSeqToUniProtRow
+    slot_derivations:
+      id:
+        expr: "'silkg:NCBIGeneRefSeqToUniProt:' + str(uniprot_tax_id) + ':' + str(uniprot_accession) + ':' + str(refseq_accession)"
+      subject:
+        expr: "'silkg:Protein:' + str(uniprot_tax_id) + ':' + str(uniprot_accession)"
+      predicate:
+        expr: "'silkg:SAME_AS'"
+      object:
+        expr: "'silkg:Protein:9606:' + str(refseq_accession)"
+      method:
+        expr: "method"

@@ -1,0 +1,31 @@
+# Source rank for scalar attribute conflicts during integrate (higher wins).
+sources:
+  ncbi-gene-info: 100
+  ncbi-gene-summary: 90
+  ncbi-gene2refseq: 50
+  ncbi-gene-neighbours: 40
+  ncbi-gene-group: 40
+  ncbi-gene-history: 30
+  ncbi-gene-refseq-to-uniprot: 20
+  uniprot-gaf: 15
+  corum-human-complexes: 10
+
+# Slot-level override: ordered source list (first listed = highest priority).
+slots:
+  Gene:
+    description:
+      - ncbi-gene-summary
+      - ncbi-gene-info
+    name:
+      - ncbi-gene-info
+      - ncbi-gene-summary
+    symbol:
+      - ncbi-gene-info
+  Protein:
+    symbol:
+      - ncbi-gene2refseq
+      - uniprot-gaf
+      - corum-human-complexes
+    name:
+      - uniprot-gaf
+      - corum-human-complexes

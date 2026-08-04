@@ -1,0 +1,14 @@
+version: 1
+rules:
+  - id: gene-type-to-so
+    when:
+      node:
+        "@type": Gene
+    actions:
+      - annotate_map:
+          target_entity: Gene
+          slot: so_types
+          from_slot: type
+          map:
+            ncRNA: SO:0000655
+            snRNA: SO:0000274

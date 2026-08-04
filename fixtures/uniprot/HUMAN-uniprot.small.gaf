@@ -1,0 +1,12 @@
+!gaf-version: 2.2
+!generated-by: UniProt
+!date-generated: 2026-06-18 08:16
+!go-version: http://purl.obolibrary.org/obo/go/releases/2026-06-15/extensions/go-plus.ofn
+UniProtKB	A0A024RBG1	NUDT4B	enables	GO:0005515	PMID:33961781	IPI	UniProtKB:Q8NFP7	F	Diphosphoinositol polyphosphate phosphohydrolase NUDT4B	NUDT4B	protein	taxon:9606	20260613	IntAct		UniProtKB:A0A024RBG1
+UniProtKB	A0A024RBG1	NUDT4B	enables	GO:0008486	GO_REF:0000003	IEA	EC:3.6.1.52	F	Diphosphoinositol polyphosphate phosphohydrolase NUDT4B	NUDT4B	protein	taxon:9606	20260616	UniProt		UniProtKB:A0A024RBG1
+UniProtKB	A0A024RBG1	NUDT4B	enables	GO:0008486	GO_REF:0000024	ISS	UniProtKB:Q9NZJ9	F	Diphosphoinositol polyphosphate phosphohydrolase NUDT4B	NUDT4B	protein	taxon:9606	20240703	UniProt		UniProtKB:A0A024RBG1
+UniProtKB	A0A024RBG1	NUDT4B	enables	GO:0016462	GO_REF:0000002	IEA	InterPro:IPR047198	F	Diphosphoinositol polyphosphate phosphohydrolase NUDT4B	NUDT4B	protein	taxon:9606	20260616	InterPro		UniProtKB:A0A024RBG1
+UniProtKB	A0A024RBG1	NUDT4B	enables	GO:0016787	GO_REF:0000002	IEA	InterPro:IPR020084	F	Diphosphoinositol polyphosphate phosphohydrolase NUDT4B	NUDT4B	protein	taxon:9606	20260616	InterPro		UniProtKB:A0A024RBG1
+UniProtKB	A0A024RBG1	NUDT4B	enables	GO:0052845	GO_REF:0000033	IBA	MGI:MGI:1928484|PANTHER:PTN000290326|PomBase:SPAC13G6.14|RGD:1310183|UniProtKB:O95989	F	Diphosphoinositol polyphosphate phosphohydrolase NUDT4B	NUDT4B	protein	taxon:9606	20260528	GO_Central		UniProtKB:A0A024RBG1
+UniProtKB	A0A024RBG1	NUDT4B	involved_in	GO:0071544	GO_REF:0000033	IBA	PANTHER:PTN000290326|UniProtKB:O95989	P	Diphosphoinositol polyphosphate phosphohydrolase NUDT4B	NUDT4B	protein	taxon:9606	20260107	GO_Central		UniProtKB:A0A024RBG1
+UniProtKB	A0A024RBG1	NUDT4B	involved_in	GO:1901909	GO_REF:0000033	IBA	PANTHER:PTN000290326|PomBase:SPAC13G6.14|UniProtKB:O95989	P	Diphosphoinositol polyphosphate phosphohydrolase NUDT4B	NUDT4B	protein	taxon:9606	20260107	GO_Central		UniProtKB:A0A024RBG1

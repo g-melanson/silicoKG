@@ -1,0 +1,56 @@
+# Static human contig -> cytogenetic chromosome map.
+# Used to emit ChromosomeRepresentedBy edges (Chromosome -REPRESENTED_BY-> GenomicSequence).
+# Covers GRCh38.p14 primary/MT accessions and T2T-CHM13v2.0 alt-locus accessions.
+tax_id: "9606"
+contigs:
+  # --- GRCh38.p14 Primary Assembly ---
+  NC_000001.11: {chromosome: "1", role: primary}
+  NC_000002.12: {chromosome: "2", role: primary}
+  NC_000003.12: {chromosome: "3", role: primary}
+  NC_000004.12: {chromosome: "4", role: primary}
+  NC_000005.10: {chromosome: "5", role: primary}
+  NC_000006.12: {chromosome: "6", role: primary}
+  NC_000007.14: {chromosome: "7", role: primary}
+  NC_000008.11: {chromosome: "8", role: primary}
+  NC_000009.12: {chromosome: "9", role: primary}
+  NC_000010.11: {chromosome: "10", role: primary}
+  NC_000011.10: {chromosome: "11", role: primary}
+  NC_000012.12: {chromosome: "12", role: primary}
+  NC_000013.11: {chromosome: "13", role: primary}
+  NC_000014.9: {chromosome: "14", role: primary}
+  NC_000015.10: {chromosome: "15", role: primary}
+  NC_000016.10: {chromosome: "16", role: primary}
+  NC_000017.11: {chromosome: "17", role: primary}
+  NC_000018.10: {chromosome: "18", role: primary}
+  NC_000019.10: {chromosome: "19", role: primary}
+  NC_000020.11: {chromosome: "20", role: primary}
+  NC_000021.9: {chromosome: "21", role: primary}
+  NC_000022.11: {chromosome: "22", role: primary}
+  NC_000023.11: {chromosome: "X", role: primary}
+  NC_000024.10: {chromosome: "Y", role: primary}
+  NC_012920.1: {chromosome: "MT", role: primary}
+  # --- T2T-CHM13v2.0 alternate assembly ---
+  NC_060925.1: {chromosome: "1", role: alt_locus}
+  NC_060926.1: {chromosome: "2", role: alt_locus}
+  NC_060927.1: {chromosome: "3", role: alt_locus}
+  NC_060928.1: {chromosome: "4", role: alt_locus}
+  NC_060929.1: {chromosome: "5", role: alt_locus}
+  NC_060930.1: {chromosome: "6", role: alt_locus}
+  NC_060931.1: {chromosome: "7", role: alt_locus}
+  NC_060932.1: {chromosome: "8", role: alt_locus}
+  NC_060933.1: {chromosome: "9", role: alt_locus}
+  NC_060934.1: {chromosome: "10", role: alt_locus}
+  NC_060935.1: {chromosome: "11", role: alt_locus}
+  NC_060936.1: {chromosome: "12", role: alt_locus}
+  NC_060937.1: {chromosome: "13", role: alt_locus}
+  NC_060938.1: {chromosome: "14", role: alt_locus}
+  NC_060939.1: {chromosome: "15", role: alt_locus}
+  NC_060940.1: {chromosome: "16", role: alt_locus}
+  NC_060941.1: {chromosome: "17", role: alt_locus}
+  NC_060942.1: {chromosome: "18", role: alt_locus}
+  NC_060943.1: {chromosome: "19", role: alt_locus}
+  NC_060944.1: {chromosome: "20", role: alt_locus}
+  NC_060945.1: {chromosome: "21", role: alt_locus}
+  NC_060946.1: {chromosome: "22", role: alt_locus}
+  NC_060947.1: {chromosome: "X", role: alt_locus}
+  NC_060948.1: {chromosome: "Y", role: alt_locus}

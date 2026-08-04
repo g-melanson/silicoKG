@@ -1,0 +1,12 @@
+publisher: bioconductor
+description: >
+  Gene-to-MeSH mappings from the MeSHDbi Bioconductor package, loaded via
+  AnnotationHub (Homo sapiens MeSHDb SQLite resource).
+packages:
+  - AnnotationHub
+  - MeSHDbi
+hub_query:
+  - MeSHDb
+  - Homo sapiens
+mesh_descriptor_filter:
+  source_name: nih-mesh

@@ -1,0 +1,58 @@
+id: https://w3id.org/silicokg/transform/uniprot/gaf
+title: UniProt GAF Transform
+prefixes:
+  silkg: https://w3id.org/silicokg/
+
+class_derivations:
+
+  Protein:
+    populated_from: UniProtGafRow
+    slot_derivations:
+      id:
+        expr: "'silkg:Protein:' + str(tax_id) + ':' + str(db_object_id)"
+      symbol:
+        expr: "db_object_symbol"
+      name:
+        expr: "db_object_name"
+      protein_accession_version:
+        expr: "db_object_id"
+      tax_id:
+        expr: "'NCBITaxon:' + str(tax_id)"
+
+  GeneProductGOAssociationEdge:
+    populated_from: UniProtGafRow
+    slot_derivations:
+      id:
+        expr: >
+          'silkg:UniProtGAF:' + str(tax_id) + ':' + str(db_object_id) + ':'
+          + str(relation) + ':' + str(go_id) + ':' + str(reference) + ':'
+          + str(evidence_code)
+      subject:
+        expr: "'silkg:Protein:' + str(tax_id) + ':' + str(db_object_id)"
+      predicate:
+        expr: "relation"
+      object:
+        expr: >
+          case(
+            (aspect == 'F',
+            'silkg:MolecularFunction:' + str(go_id)),
+            (aspect == 'P',
+            'silkg:BiologicalProcess:' + str(go_id)),
+            (aspect == 'C',
+            'silkg:CellComponent:' + str(go_id)),
+            (True, None)
+          )
+      negated:
+        expr: "negated"
+      evidence_code:
+        expr: "evidence_code"
+      reference:
+        expr: "reference"
+      with_from:
+        expr: "with_from"
+      aspect:
+        expr: "aspect"
+      assigned_by:
+        expr: "assigned_by"
+      annotation_date:
+        expr: "annotation_date"

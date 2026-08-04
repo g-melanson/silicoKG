@@ -1,0 +1,115 @@
+id: https://w3id.org/silicokg/transform/ncbi/gene2refseq
+title: NCBI Gene2RefSeq Transform
+prefixes:
+  silkg: https://w3id.org/silicokg/
+
+class_derivations:
+
+  GenomicSequence:
+    populated_from: NCBIGene2RefSeqRow
+    slot_derivations:
+      id:
+        expr: "'silkg:GenomicSequence:' + str(tax_id) + ':' + str(genomic_nucleotide_accession_version)"
+      accession:
+        expr: "genomic_nucleotide_accession_version"
+      accession_type:
+        expr: >
+          case(
+            (startswith(genomic_nucleotide_accession_version, 'NC_'), 'chromosome'),
+            (startswith(genomic_nucleotide_accession_version, 'NG_'), 'gene_scaffold'),
+            (startswith(genomic_nucleotide_accession_version, 'NW_'), 'wgs_contig'),
+            (startswith(genomic_nucleotide_accession_version, 'NT_'), 'clone_contig'),
+            (True, 'other')
+          )
+      assembly:
+        expr: "assembly"
+      tax_id:
+        expr: "'NCBITaxon:' + str(tax_id)"
+
+  Transcript:
+    populated_from: NCBIGene2RefSeqRow
+    slot_derivations:
+      id:
+        expr: "'silkg:Transcript:' + str(tax_id) + ':' + str(rna_nucleotide_accession_version)"
+      rna_nucleotide_accession_version:
+        expr: "rna_nucleotide_accession_version"
+      symbol:
+        expr: "symbol"
+
+  Protein:
+    populated_from: NCBIGene2RefSeqRow
+    slot_derivations:
+      id:
+        expr: "'silkg:Protein:' + str(tax_id) + ':' + str(protein_accession_version)"
+      protein_accession_version:
+        expr: "protein_accession_version"
+      symbol:
+        expr: "symbol"
+
+  MaturePeptide:
+    populated_from: NCBIGene2RefSeqRow
+    slot_derivations:
+      id:
+        expr: "'silkg:MaturePeptide:' + str(tax_id) + ':' + str(mature_peptide_accession_version)"
+      mature_peptide_accession_version:
+        expr: "mature_peptide_accession_version"
+      symbol:
+        expr: "symbol"
+
+  GenomicSequenceMapsGene:
+    populated_from: NCBIGene2RefSeqRow
+    slot_derivations:
+      id:
+        expr: "'silkg:GenomicSequenceMapsGene:' + str(tax_id) + ':' + str(genomic_nucleotide_accession_version) + ':' + str(gene_id)"
+      subject:
+        expr: "'silkg:GenomicSequence:' + str(tax_id) + ':' + str(genomic_nucleotide_accession_version)"
+      predicate:
+        expr: "'silkg:MAPS_TO'"
+      object:
+        expr: "'silkg:Gene:' + str(tax_id) + ':' + str(gene_id)"
+      start:
+        expr: "start_position_on_the_genomic_accession"
+      end:
+        expr: "end_position_on_the_genomic_accession"
+      orientation:
+        expr: "orientation"
+      assembly:
+        expr: "assembly"
+      status:
+        expr: "status"
+
+  TranscriptSameAsTranscript:
+    populated_from: NCBIGene2RefSeqRow
+    slot_derivations:
+      id:
+        expr: "'silkg:TranscriptSameAsTranscript:' + str(tax_id) + ':' + str(gene_id) + ':' + str(rna_nucleotide_accession_version)"
+      subject:
+        expr: "'silkg:Transcript:' + str(tax_id) + ':' + str(rna_nucleotide_accession_version)"
+      predicate:
+        expr: "'silkg:SAME_AS'"
+      object:
+        expr: "'silkg:Transcript:' + str(tax_id) + ':' + str(gene_id)"
+
+  ProteinSameAsProtein:
+    populated_from: NCBIGene2RefSeqRow
+    slot_derivations:
+      id:
+        expr: "'silkg:ProteinSameAsProtein:' + str(tax_id) + ':' + str(gene_id) + ':' + str(protein_accession_version)"
+      subject:
+        expr: "'silkg:Protein:' + str(tax_id) + ':' + str(protein_accession_version)"
+      predicate:
+        expr: "'silkg:SAME_AS'"
+      object:
+        expr: "'silkg:Protein:' + str(tax_id) + ':' + str(gene_id)"
+
+  ProteinHasMaturePeptideProduct:
+    populated_from: NCBIGene2RefSeqRow
+    slot_derivations:
+      id:
+        expr: "'silkg:ProteinHasMaturePeptideProduct:' + str(tax_id) + ':' + str(gene_id) + ':' + str(protein_accession_version)"
+      subject:
+        expr: "'silkg:Protein:' + str(tax_id) + ':' + str(protein_accession_version)"
+      predicate:
+        expr: "'silkg:HAS_MATURE_PEPTIDE_PRODUCT'"
+      object:
+        expr: "'silkg:MaturePeptide:' + str(tax_id) + ':' + str(mature_peptide_accession_version)"

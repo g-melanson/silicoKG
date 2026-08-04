@@ -1,0 +1,52 @@
+id: https://w3id.org/silicokg/source/uniprot/gaf
+name: uniprot-gaf
+title: UniProt GAF Source Schema
+description: Bronze row shape for GO Gene Association Format (GAF) 2.2 files.
+
+prefixes:
+  silkg: https://w3id.org/silicokg/
+default_prefix: silkg
+
+classes:
+  UniProtGafRow:
+    description: >
+      One GAF 2.2 annotation row. Qualifier column is split into relation
+      (passthrough predicate) and negated flag during ingest.
+    attributes:
+      db:
+        range: string
+      db_object_id:
+        range: string
+      db_object_symbol:
+        range: string
+      relation:
+        range: string
+        description: GAF relation after stripping NOT| prefix (e.g. enables).
+      negated:
+        range: boolean
+      go_id:
+        range: string
+      reference:
+        range: string
+      evidence_code:
+        range: string
+      with_from:
+        range: string
+      aspect:
+        range: string
+      db_object_name:
+        range: string
+      db_object_synonym:
+        range: string
+      db_object_type:
+        range: string
+      tax_id:
+        range: string
+      annotation_date:
+        range: string
+      assigned_by:
+        range: string
+      annotation_extension:
+        range: string
+      gene_product_form_id:
+        range: string

@@ -1,0 +1,46 @@
+id: https://w3id.org/silicokg/mesh-descriptors
+name: mesh-descriptors
+title: MeSH Descriptors
+description: Domain model for MeSH descriptors and tree hierarchy edges.
+
+default_prefix: silkg
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  silkg: https://w3id.org/silicokg/
+
+imports:
+  - linkml:types
+  - ../classes
+  - ../slots
+
+classes:
+  MeSHDescriptor:
+    is_a: NamedThing
+    description: A MeSH topical descriptor from the NIH MeSH vocabulary.
+    slots:
+      - id
+      - name
+      - description
+      - synonyms
+
+  MeSHBroaderThan:
+    description: >
+      Immediate broader-descriptor edge from a MeSH browse tree number
+      (child descriptor → parent descriptor within a tree branch).
+    slots:
+      - id
+      - subject
+      - object
+      - predicate
+
+  NCBIGeneToMeSH:
+    description: >
+      Edge between NCBI/Entrez gene and MeSH descriptor. The association
+      is produced by the Bioconductor MeSHDbi R package; an aggregation of
+      MeSH IDs from published PubMed articles that can be disjointed.
+    slots:
+      - id
+      - subject
+      - object
+      - predicate

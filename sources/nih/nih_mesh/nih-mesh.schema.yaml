@@ -1,0 +1,78 @@
+id: https://w3id.org/silicokg/source/nih/mesh
+name: nih-mesh
+title: NIH MeSH Bronze Source Schema
+
+prefixes:
+  silkg: https://w3id.org/silicokg/
+  mesh: https://id.nlm.nih.gov/mesh/
+  linkml: https://w3id.org/linkml/
+
+default_prefix: silkg
+
+imports:
+  - linkml:types
+
+enums:
+  MeshRowKind:
+    permissible_values:
+      descriptor:
+        description: A filtered MeSH descriptor record from desc{year}.xml.
+      edge:
+        description: >
+          Immediate broader-descriptor edge derived from a TreeNumber parent
+          (owner(tree) → owner(parent(tree))). No SeeRelated, concept, or
+          literature association edges.
+
+classes:
+  NIHMeshDescriptorRow:
+    description: >
+      One MeSH descriptor that passed the tree-number allowlist.
+    attributes:
+      row_kind:
+        range: MeshRowKind
+        required: true
+      descriptor_ui:
+        range: string
+        required: true
+        description: Persistent MeSH descriptor ID, e.g. D066329.
+      label:
+        range: string
+        required: true
+        description: Preferred descriptor name.
+      tree_numbers:
+        range: string
+        multivalued: true
+        required: true
+        description: All browse-tree positions for this descriptor.
+      scope_note:
+        range: string
+        description: Definition from the preferred concept, when present.
+      synonyms:
+        range: string
+        multivalued: true
+        description: Non-permuted term strings from the preferred concept.
+
+  NIHMeshEdgeRow:
+    description: >
+      One hop up the MeSH browse tree for a single TreeNumber, when both the
+      child and parent tree positions map to descriptors in the filtered set.
+    attributes:
+      row_kind:
+        range: MeshRowKind
+        required: true
+      subject_id:
+        range: string
+        required: true
+        description: Child descriptor UI (narrower).
+      object_id:
+        range: string
+        required: true
+        description: Parent descriptor UI (broader).
+      tree_number:
+        range: string
+        required: true
+        description: Tree branch this edge belongs to.
+      predicate_id:
+        range: string
+        required: true
+        description: Edge predicate, e.g. mesh:broaderDescriptor.

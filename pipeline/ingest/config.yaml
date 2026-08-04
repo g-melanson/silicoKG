@@ -1,0 +1,76 @@
+ncbi-gene-info:
+  url: https://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz
+  ttl_seconds: 21600
+  format: tsv
+  raw_filename: Homo_sapiens.gene_info.tsv
+
+ncbi-gene-summary:
+  url: https://ftp.ncbi.nlm.nih.gov/gene/DATA/gene_summary.gz
+  ttl_seconds: 21600
+  format: tsv
+  raw_filename: gene_summary.tsv
+
+ncbi-gene2refseq:
+  url: https://ftp.ncbi.nlm.nih.gov/gene/DATA/gene2refseq.gz
+  ttl_seconds: 21600
+  format: tsv
+  raw_filename: gene2refseq.tsv
+
+ncbi-gene-group:
+  url: https://ftp.ncbi.nlm.nih.gov/gene/DATA/gene_group.gz
+  ttl_seconds: 21600
+  format: tsv
+  raw_filename: gene-group.tsv
+
+ncbi-gene-refseq-to-uniprot:
+  url: local://data/ncbi/gene_refseq_uniprotkb_collab
+  ttl_seconds: 21600
+  format: tsv
+  raw_filename: gene_refseq_uniprotkb_mapping.tsv
+
+uniprot-gaf:
+  url: local://data/uniprot/HUMAN-uniprot.gaf
+  ttl_seconds: 604800
+  format: gaf
+  raw_filename: HUMAN-uniprot.gaf
+
+obo-so:
+  url: http://purl.obolibrary.org/obo/so.owl
+  ttl_seconds: 604800
+  format: owl
+  raw_filename: so.owl
+
+obo-go:
+  url: local://data/go-plus.owl
+  ttl_seconds: 604800
+  format: owl
+  raw_filename: go.owl
+
+tflink-tf-interactions:
+  url: https://cdn.netbiol.org/tflink/download_files/TFLink_Homo_sapiens_interactions_All_simpleFormat_v1.0.tsv.gz
+  ttl_seconds: 21600
+  format: tsv
+  raw_filename: TFLink_Homo_sapiens_interactions_All_simpleFormat_v1.0.tsv
+  allow_rejects: true
+
+nih-mesh:
+  url: https://nlmpubs.nlm.nih.gov/projects/mesh/MESH_FILES/xmlmesh/desc2026.xml
+  ttl_seconds: 604800
+  format: xml
+  raw_filename: desc2026.xml
+
+bioconductor-meshdbi:
+  url: local://sources/bioconductor/bioconductor_meshdbi/source.yaml
+  format: bioconductor
+  raw_filename: source.yaml
+
+hgnc-gene-groups:
+  url: https://storage.googleapis.com/public-download-files/hgnc/csv/csv/genefamily_db_tables/family.csv
+  ttl_seconds: 21600
+  raw_filename: family.csv
+
+corum-human-complexes:
+  url: local://data/corum/corum_humanComplexes.json
+  ttl_seconds: 604800
+  format: json
+  raw_filename: corum_humanComplexes.json

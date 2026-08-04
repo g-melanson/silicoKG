@@ -1,0 +1,64 @@
+[
+  {
+    "complex_id": 1,
+    "complex_name": "BCL6-HDAC4 complex",
+    "synonyms": null,
+    "organism": "Human",
+    "pmid": 11929873,
+    "comment_complex": "Transcriptional repression by BCL6 recruits histone deacetylases.",
+    "comment_members": null,
+    "comment_disease": null,
+    "comment_drug": null,
+    "comment_drug_formal": null,
+    "subunits": [
+      {"swissprot": {"uniprot_id": "P41182", "gene_name": "BCL6", "protein_name": "B-cell lymphoma 6 protein"}},
+      {"swissprot": {"uniprot_id": "P56524", "gene_name": "HDAC4", "protein_name": "Histone deacetylase 4"}}
+    ],
+    "functions": [
+      {"evi": "lit", "pmid": 11929873, "go": {"name": "histone deacetylase activity", "ontology": "molecular_function", "go_id": "GO:0004407"}},
+      {"evi": "exp", "pmid": 11929873, "go": {"name": "nucleus", "ontology": "cellular_component", "go_id": "GO:0005634"}},
+      {"evi": "lit", "pmid": 22222222, "go": {"name": "DNA topological change", "ontology": "biological_process", "go_id": "GO:0006265"}}
+    ],
+    "fcgs": []
+  },
+  {
+    "complex_id": 16,
+    "complex_name": "Test complex sixteen",
+    "synonyms": "Alias A; Alias B",
+    "organism": "Human",
+    "pmid": 111,
+    "comment_complex": "complex level note",
+    "comment_members": "member level note",
+    "comment_disease": "linked to a disease",
+    "comment_drug": null,
+    "comment_drug_formal": null,
+    "subunits": [
+      {"swissprot": {"uniprot_id": "Q00001", "gene_name": "GENEX", "protein_name": "Protein X"}}
+    ],
+    "functions": [
+      {"evi": "lit", "pmid": 222, "go": {"name": "some function", "ontology": "molecular_function", "go_id": "GO:0000001"}}
+    ],
+    "fcgs": []
+  },
+  {
+    "complex_id": 36,
+    "complex_name": "Test complex thirtysix",
+    "synonyms": null,
+    "organism": "Human",
+    "pmid": 9733768,
+    "comment_complex": null,
+    "comment_members": null,
+    "comment_disease": null,
+    "comment_drug": null,
+    "comment_drug_formal": null,
+    "subunits": [
+      {"swissprot": {"uniprot_id": "Q00002", "gene_name": "GENEY", "protein_name": "Protein Y"}}
+    ],
+    "functions": [
+      {"evi": "lit", "pmid": 9733768, "go": {"name": "bogus", "ontology": "not_an_aspect", "go_id": "GO:9999999"}}
+    ],
+    "fcgs": [
+      {"fcg": {"fcg_id": 16, "name": "Vesicle-mediated transport", "go": {"name": "vesicle-mediated transport", "ontology": "biological_process", "go_id": "GO:0016192"}}}
+    ]
+  }
+]

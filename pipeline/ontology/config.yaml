@@ -1,0 +1,15 @@
+obo-so:
+  url: http://purl.obolibrary.org/obo/so.owl
+  source: obo
+  source_name: obo-so
+  ontology_namespace: http://purl.obolibrary.org/obo/SO_
+  term_id_prefix: SO
+  property_namespace: http://purl.obolibrary.org/obo/so#
+  property_id_prefix: so
+
+obo-go:
+  url: local://data/go-plus.owl
+  source: obo
+  source_name: obo-go
+  ontology_namespace: http://purl.obolibrary.org/obo/GO_
+  term_id_prefix: GO

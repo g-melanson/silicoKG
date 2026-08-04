@@ -1,0 +1,91 @@
+id: https://w3id.org/silicokg/source/owl/schema
+name: owl-schema
+title: OWL Source Schema
+description: >
+  Bronze row shapes for the obo-so ontology refresh run. The OWL adapter emits
+  one mixed JSONL stream of class rows and restriction rows, discriminated by
+  row_kind. These rows are validated here, then compiled into
+  universe/cache/obo-so/index.yaml. 
+  
+  They do not go through transform/integrate.
+
+prefixes:
+  silkg: https://w3id.org/silicokg/
+  linkml: https://w3id.org/linkml/
+  
+default_prefix: silkg
+
+imports:
+  - linkml:types
+
+enums:
+  BronzeRowKind:
+    permissible_values:
+      class:
+        description: An owl:Class term extracted from so.owl.
+      restriction:
+        description: An extracted owl:someValuesFrom restriction row.
+
+  RestrictionType:
+    permissible_values:
+      some_values_from:
+        description: owl:someValuesFrom on rdfs:subClassOf (v1 scope).
+
+classes:
+  OntologyClassRow:
+    description: >
+      One SO owl:Class term. Full-file extraction: every named SO_ class in
+      http://purl.obolibrary.org/obo/so.owl becomes one row.
+    attributes:
+      row_kind:
+        range: BronzeRowKind
+        required: true
+      term_id:
+        range: string
+        required: true
+        description: OBO-style CURIE, e.g. SO:0000287.
+      iri:
+        range: string
+        required: true
+        description: Canonical class IRI, e.g. http://purl.obolibrary.org/obo/SO_0000287.
+      label:
+        range: string
+        description: rdfs:label when present.
+      parents:
+        range: string
+        multivalued: true
+        description: >
+          Named rdfs:subClassOf parent CURIEs only. Anonymous restriction
+          expressions on subClassOf are not listed here; see restriction rows.
+      synonyms:
+        range: string
+        multivalued: true
+        description: Values from oboInOwl:*Synonym annotation properties.
+
+  OntologyRestrictionRow:
+    description: >
+      One extracted restriction for a class. v1 includes only someValuesFrom
+      restrictions attached via rdfs:subClassOf.
+    attributes:
+      row_kind:
+        range: BronzeRowKind
+        required: true
+      class_id:
+        range: string
+        required: true
+        description: CURIE of the restricted owl:Class.
+      restriction_type:
+        range: RestrictionType
+        required: true
+      property_iri:
+        range: string
+        required: true
+        description: Full IRI of the restriction property.
+      property_id:
+        range: string
+        required: true
+        description: CURIE for the property, e.g. so:has_quality.
+      filler_id:
+        range: string
+        required: true
+        description: CURIE of the owl:someValuesFrom filler class.

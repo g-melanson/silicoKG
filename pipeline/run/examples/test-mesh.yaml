@@ -1,0 +1,19 @@
+run_id: test-mesh
+sources:
+  - source: nih
+    source_name: nih-mesh
+  - source: bioconductor
+    source_name: bioconductor-meshdbi
+
+stages:
+  - ingest
+  - validate
+  - transform
+  - integrate
+  - publish
+  - export_neo4j
+
+snapshot_raw: false
+
+publish:
+  schema: schemas/domain/silicokg.yaml

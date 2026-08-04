@@ -1,0 +1,19 @@
+id: https://w3id.org/silicokg/classes
+name: classes
+title: Classes
+description: Base classes for SilicoKG.
+
+default_prefix: silkg
+
+imports:
+  - linkml:types
+  - slots
+  - prefixes
+
+classes:
+  NamedThing:
+    abstract: true
+    description: Anything with a stable identifier.
+    slots:
+      - id
+      - name

@@ -1,0 +1,199 @@
+id: https://w3id.org/silicokg/gene-or-gene-product
+name: gene-or-gene-product
+title: Gene or Gene Product
+description: Domain model for genes and related entities.
+
+default_prefix: silkg
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  silkg: https://w3id.org/silicokg/
+
+imports:
+  - linkml:types
+  - ../classes
+  - ../slots
+
+classes:
+
+### ENTITIES ##################################################################
+  GeneOrGeneProduct:
+    is_a: NamedThing
+    slots:
+      - id
+      - name
+      - description
+      - symbol
+      - type
+      - synonyms
+      - tax_id
+      - so_types
+      - so_qualities
+      - class_labels
+  
+  Chromosome:
+    is_a: NamedThing
+    description: >
+      A cytogenetic chromosome. Not a gene product — location semantics are
+      expressed via ChromosomeHasGene and ChromosomeRepresentedBy edges.
+    slots:
+      - id
+      - name
+      - tax_id
+
+  Gene:
+    is_a: GeneOrGeneProduct
+    slots:
+      - feature_types
+      - genomic_nucleotide_accession_version
+
+  Transcript:
+    is_a: GeneOrGeneProduct
+    slots:
+      - rna_nucleotide_accession_version
+
+  Protein:
+    is_a: GeneOrGeneProduct
+    slots:
+      - protein_accession_version
+
+  Pseudogene:
+    is_a: Gene
+
+  MaturePeptide:
+    is_a: Protein
+    slots:
+      - mature_peptide_accession_version
+
+### REIFIED EDGES ############################################################
+
+  ChromosomeHasGene:
+    description: Reified edge — chromosome membership for a gene.
+    slots:
+      - id
+      - subject
+      - object
+      - map_location
+
+  GeneHasDbXref:
+    description: Reified edge — gene cross-reference to an external CURIE.
+    slots:
+      - id
+      - subject
+      - object
+
+  GeneHasTranscriptProduct:
+    description: Reified edge — gene has a transcript product.
+    slots:
+      - id
+      - subject
+      - predicate
+      - object
+
+  TranscriptHasProteinProduct:
+    description: Reified edge — transcript has a protein product.
+    slots:
+      - id
+      - subject
+      - predicate
+      - object
+
+  GeneSameAsGene:
+    description: Reified edge — gene same as gene.
+    slots:
+      - id
+      - subject
+      - predicate
+      - object
+
+  TranscriptSameAsTranscript:
+    description: Reified edge — transcript same as transcript.
+    slots:
+      - id
+      - subject
+      - predicate
+      - object
+
+  ProteinSameAsProtein:
+    description: Reified edge — protein same as protein.
+    slots:
+      - id
+      - subject
+      - predicate
+      - object
+
+  ProteinHasMaturePeptideProduct:
+    description: Reified edge — protein has mature peptide product.
+    slots:
+      - id
+      - subject
+      - predicate
+      - object
+
+  NCBIGeneRefSeqToUniProtEdge:
+    description: >
+      Reified edge — gene refseq to uniprot using NCBI Gene RefSeq to UniProt 
+      collaboration resource.
+    slots:
+      - id
+      - subject
+      - predicate
+      - object
+      - method
+
+  GeneProductGOAssociationEdge:
+    description: >
+      Gene product to GO term association with source-native predicate
+      (e.g. GAF enables, involved_in, located_in).
+    slots:
+      - id
+      - subject
+      - predicate
+      - object
+      - negated
+      - evidence_code
+      - reference
+      - with_from
+      - aspect
+      - assigned_by
+      - annotation_date
+
+### GENETIC EDGES ############################################################
+  GeneHasPseudogene:
+    description: Reified edge — gene pseudogene.
+    slots:
+      - id
+      - subject
+      - predicate
+      - object
+
+  GeneHasReadthroughParent:
+    slots:
+      - id
+      - subject
+      - predicate
+      - object
+
+  GeneHasReadthroughSibling:
+    slots:
+      - id
+      - subject
+      - predicate
+      - object
+
+  GeneHasRegionParent:
+    slots:
+      - id
+      - subject
+      - predicate
+      - object
+
+  TFInteractsWithGene:
+    slots:
+      - id
+      - subject
+      - predicate
+      - object
+      - detection_method
+      - pubmed_id
+      - source_database

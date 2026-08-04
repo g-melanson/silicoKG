@@ -1,0 +1,17 @@
+id: https://w3id.org/silicokg/enums/go-aspects
+name: silkg_go_aspects
+title: GO Aspects
+
+imports:
+  - linkml:types
+
+enums:
+  GOAspects:
+    description: The GO aspect of the term (BP, MF, or CC).
+    permissible_values:
+      biological_process:
+        description: A biological process.
+      cellular_component:
+        description: A cellular component.
+      molecular_function:
+        description: A molecular function.

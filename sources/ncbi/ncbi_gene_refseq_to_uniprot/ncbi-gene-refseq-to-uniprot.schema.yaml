@@ -1,0 +1,32 @@
+id: https://w3id.org/silicokg/source/ncbi/gene_refseq_to_uniprot
+name: ncbi-gene-refseq-to-uniprot
+title: NCBI Gene RefSeq to UniProt Source Schemas
+prefixes:
+  path: https://w3id.org/silicokg/
+default_prefix: silkg
+
+classes:
+  NCBIGeneRefSeqToUniProtRow:
+    description: >
+      A row representing an entity node in the NCBI Gene RefSeq to UniProt resource.
+    attributes:
+      uniprot_accession:
+        range: string
+        annotations:
+          silkg:publisher_header: "UniProtKB_protein_accession"
+      refseq_accession:
+        range: string
+        annotations:
+          silkg:publisher_header: "NCBI_protein_accession"
+      refseq_tax_id:
+        range: string
+        annotations:
+          silkg:publisher_header: "NCBI_tax_id"
+      uniprot_tax_id:
+        range: string
+        annotations:
+          silkg:publisher_header: "UniProtKB_tax_id"
+      method:
+        range: string
+        annotations:
+          silkg:publisher_header: "method"

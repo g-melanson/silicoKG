@@ -1,0 +1,11 @@
+id: https://w3id.org/silicokg/prefixes
+name: silkg_prefixes
+title: Prefixes for SilicoKG
+
+default_prefix: silkg
+
+prefixes:
+  silkg: https://w3id.org/silicokg/
+  so: http://purl.obolibrary.org/obo/SO_
+  SO: http://purl.obolibrary.org/obo/SO_
+  CORUM: https://mips.helmholtz-muenchen.de/corum/#

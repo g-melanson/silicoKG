@@ -1,0 +1,12 @@
+id: https://w3id.org/silicokg/domain
+name: silicokg-domain
+title: SilicoKG Combined Domain
+description: Umbrella schema for publish validation across all domain modules.
+default_prefix: silkg
+imports:
+  - gene-or-gene-product
+  - genomic-sequence
+  - gene-ontology
+  - mesh-descriptors
+  - hgnc-gene-groups
+  - protein-complexes

@@ -1,0 +1,75 @@
+id: https://w3id.org/path-walker/source/ncbi/gene-neighbours
+name: ncbi-gene-neighbours
+title: NCBI Gene Neighbours Source Schemas
+prefixes:
+  path: https://w3id.org/path-walker/
+default_prefix: path
+
+classes:
+  GeneNeighboursRow:
+    description: >
+      A row representing an entity node in the NCBI Gene Neighbours resource.
+      https://ftp.ncbi.nlm.nih.gov/gene/DATA/gene_neighbours.gz
+    attributes:
+      tax_id:
+        range: string
+        annotations:
+          path:publisher_header: "tax_id"
+      gene_id:
+        range: string
+        annotations:
+          path:publisher_header: "GeneID"
+      genomic_accession_version:
+        range: string
+        annotations:
+          path:publisher_header: "genomic accession.version"
+      genomic_gi:
+        range: string
+        annotations:
+          path:publisher_header: "genomic gi"
+      start_position:
+        range: string
+        annotations:
+          path:publisher_header: "start position"
+      end_position:
+        range: string
+        annotations:
+          path:publisher_header: "end position"
+      orientiation:
+        range: string
+        annotations:
+          path:publisher_header: "orientation"
+      chromosome:
+        range: string
+        annotations:
+          path:publisher_header: "chromosome"
+      gene_ids_on_left:
+        range: string
+        multivalued: true
+        delimiter: "|"
+        annotations:
+          path:publisher_header: "GeneIDs on left"
+      distance_to_left:
+        range: string
+        annotations:
+          path:publisher_header: "distance to left"
+      gene_ids_on_right:
+        range: string
+        multivalued: true
+        delimiter: "|"
+        annotations:
+          path:publisher_header: "GeneIDs on right"
+      distance_to_right:
+        range: string
+        annotations:
+          path:publisher_header: "distance to right"
+      overlapping_gene_ids:
+        range: string
+        multivalued: true
+        delimiter: "|"
+        annotations:
+          path:publisher_header: "overlapping GeneIDs"
+      assembly:
+        range: string
+        annotations:
+          path:publisher_header: "assembly"

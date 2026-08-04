@@ -1,0 +1,61 @@
+id: https://w3id.org/silicokg/genomic-sequence
+name: genomic-sequence
+title: Genomic Sequence
+description: >
+  Domain model for RefSeq (or INSDC) nucleotide sequences used as mapping
+  references, and their relationships to genes and chromosomes. Genomic
+  accessions (NC_/NG_/NW_/NT_) are sequence references, not genes.
+
+default_prefix: silkg
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  silkg: https://w3id.org/silicokg/
+
+imports:
+  - linkml:types
+  - ../classes
+  - ../slots
+
+classes:
+
+### ENTITIES ##################################################################
+  GenomicSequence:
+    is_a: NamedThing
+    description: >
+      A RefSeq (or INSDC) nucleotide sequence used as a mapping reference.
+      NC_* = chromosome/contig; NG_* = gene-local scaffold; NW_* = WGS contig;
+      NT_* = clone-based contig.
+    slots:
+      - id
+      - accession
+      - accession_type
+      - assembly
+      - tax_id
+
+### REIFIED EDGES ############################################################
+
+  GenomicSequenceMapsGene:
+    description: >
+      Reified edge — a gene is annotated (placed) on this genomic sequence,
+      with optional coordinates from gene2refseq.
+    slots:
+      - id
+      - subject
+      - predicate
+      - object
+      - start
+      - end
+      - orientation
+      - assembly
+      - status
+
+  ChromosomeRepresentedBy:
+    description: >
+      Reified edge — a cytogenetic chromosome is represented by an assembly
+      genomic sequence (primary or alt-locus contig).
+    slots:
+      - id
+      - subject
+      - predicate
+      - object

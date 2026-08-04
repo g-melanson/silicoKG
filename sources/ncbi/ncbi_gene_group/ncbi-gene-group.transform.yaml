@@ -1,0 +1,60 @@
+id: https://w3id.org/silicokg/transform/ncbi/gene-group
+title: NCBI Gene Group Transform
+prefixes:
+  silkg: https://w3id.org/silicokg/
+
+class_derivations:
+
+  Gene:
+    populated_from: NCBIGeneGroupRow
+    slot_derivations:
+      id:
+        expr: "'silkg:Gene:' + str(tax_id) + ':' + str(gene_id)"
+
+  GeneHasPseudogene:
+    populated_from: NCBIGeneGroupRow
+    slot_derivations:
+      id:
+        expr: "edge_id if edge_class == 'GeneHasPseudogene' else None"
+      subject:
+        expr: "subject_uri"
+      predicate:
+        expr: "edge_predicate"
+      object:
+        expr: "object_uri"
+
+  GeneHasReadthroughParent:
+    populated_from: NCBIGeneGroupRow
+    slot_derivations:
+      id:
+        expr: "edge_id if edge_class == 'GeneHasReadthroughParent' else None"
+      subject:
+        expr: "subject_uri"
+      predicate:
+        expr: "edge_predicate"
+      object:
+        expr: "object_uri"
+
+  GeneHasReadthroughSibling:
+    populated_from: NCBIGeneGroupRow
+    slot_derivations:
+      id:
+        expr: "edge_id if edge_class == 'GeneHasReadthroughSibling' else None"
+      subject:
+        expr: "subject_uri"
+      predicate:
+        expr: "edge_predicate"
+      object:
+        expr: "object_uri"
+
+  GeneHasRegionParent:
+    populated_from: NCBIGeneGroupRow
+    slot_derivations:
+      id:
+        expr: "edge_id if edge_class == 'GeneHasRegionParent' else None"
+      subject:
+        expr: "subject_uri"
+      predicate:
+        expr: "edge_predicate"
+      object:
+        expr: "object_uri"

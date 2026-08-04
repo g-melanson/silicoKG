@@ -1,0 +1,77 @@
+id: https://w3id.org/silicokg/source/ncbi/gene2refseq
+name: ncbi-gene2refseq
+title: NCBI Gene2RefSeq Source Schemas
+prefixes:
+  path: https://w3id.org/silicokg/
+default_prefix: silkg
+
+classes:
+  NCBIGene2RefSeqRow:
+    description: >
+      A row representing an entity node in the NCBI Gene2RefSeq resource.
+      https://ftp.ncbi.nlm.nih.gov/gene/DATA/gene2refseq.gz
+    attributes:
+      tax_id:
+        range: string
+        annotations:
+          silkg:publisher_header: "tax_id"
+      gene_id:
+        range: string
+        annotations:
+          silkg:publisher_header: "GeneID"
+      status:
+        range: string
+        annotations:
+          silkg:publisher_header: "status"
+      rna_nucleotide_accession_version:
+        range: string
+        annotations:
+          silkg:publisher_header: "RNA_nucleotide_accession.version"
+      rna_nucleotide_gi:
+        range: string
+        annotations:
+          silkg:publisher_header: "RNA_nucleotide_gi"
+      protein_accession_version:
+        range: string
+        annotations:
+          silkg:publisher_header: "protein_accession.version"
+      protein_gi:
+        range: string
+        annotations:
+          silkg:publisher_header: "protein_gi"
+      genomic_nucleotide_accession_version:
+        range: string
+        annotations:
+          silkg:publisher_header: "genomic_nucleotide_accession.version"
+      genomic_nucleotide_gi:
+        range: string
+        annotations:
+          silkg:publisher_header: "genomic_nucleotide_gi"
+      start_position_on_the_genomic_accession:
+        range: string
+        annotations:
+          silkg:publisher_header: "start_position_on_the_genomic_accession"
+      end_position_on_the_genomic_accession:
+        range: string
+        annotations:
+          silkg:publisher_header: "end_position_on_the_genomic_accession"
+      orientation:
+        range: string
+        annotations:
+          silkg:publisher_header: "orientation"
+      assembly:
+        range: string
+        annotations:
+          silkg:publisher_header: "assembly"
+      mature_peptide_accession_version:
+        range: string
+        annotations:
+          silkg:publisher_header: "mature_peptide_accession.version"
+      mature_peptide_gi:
+        range: string
+        annotations:
+          silkg:publisher_header: "mature_peptide_gi"
+      symbol:
+        range: string
+        annotations:
+          silkg:publisher_header: "Symbol"

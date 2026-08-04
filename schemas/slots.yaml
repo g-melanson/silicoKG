@@ -1,0 +1,204 @@
+id: https://w3id.org/silicokg/slots
+name: slots
+title: Slots
+description: Shared slots for SilicoKG domain schemas.
+
+default_prefix: silkg
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  silkg: https://w3id.org/silicokg/
+
+imports:
+  - linkml:types
+  - prefixes
+
+slots:
+  accession_version:
+    description: Accession version provided with RefSeq record.
+    range: string
+
+  accession:
+    description: RefSeq (or INSDC) nucleotide accession, e.g. NC_000019.10.
+    range: string
+
+  accession_type:
+    description: >
+      Kind of genomic sequence reference inferred from the accession prefix:
+      chromosome (NC_), gene_scaffold (NG_), wgs_contig (NW_),
+      clone_contig (NT_), or other.
+    range: string
+
+  start:
+    description: Start coordinate of a gene on a genomic sequence (1-based, as string).
+    range: string
+
+  end:
+    description: End coordinate of a gene on a genomic sequence (as string).
+    range: string
+
+  orientation:
+    description: Strand orientation of a gene on a genomic sequence (+/-).
+    range: string
+
+  assembly:
+    description: Assembly identifier provided with RefSeq record.
+    range: string
+
+  status:
+    description: RefSeq record status (e.g. REVIEWED, MODEL).
+    range: string
+
+  feature_type:
+    description: Feature type classification.
+    range: string
+
+  feature_types:
+    description: >
+      Parsed NCBI feature-type tokens (suffix after category prefix), e.g.
+      enhancer, silencer. Populated from pipe-delimited Feature_type values.
+    range: string
+    multivalued: true
+    inlined_as_list: true
+
+  gene_info_id:
+    description: RefSeq Gene Info (gi) ID.
+    range: string
+
+  id:
+    range: string
+    identifier: true
+
+  name:
+    range: string
+
+  symbol:
+    description: A reference symbol from a structured nomenclature authority.
+    range: string
+
+  description:
+    range: string
+
+  synonyms:
+    range: string
+    multivalued: true
+    inlined_as_list: true
+
+  type:
+    description: Gene or product type classification.
+    range: string
+
+  tax_id:
+    description: NCBI taxonomy identifier as a CURIE.
+    range: uriorcurie
+
+  dbxrefs:
+    description: Normalized external database cross-references.
+    range: uriorcurie
+    multivalued: true
+    inlined_as_list: true
+
+  same_as:
+    description: External database cross-reference (attribute view).
+    slot_uri: silkg:SAME_AS
+    range: uriorcurie
+    multivalued: true
+    inlined_as_list: true
+
+  so_types:
+    description: Assigned Sequence Ontology class CURIEs.
+    range: uriorcurie
+    multivalued: true
+    inlined_as_list: true
+
+  so_qualities:
+    description: SO restriction fillers propagated from assigned classes.
+    range: uriorcurie
+    multivalued: true
+    inlined_as_list: true
+
+  class_labels:
+    description: >
+      silicoKG-owned classification CURIEs (e.g. silkg:CORUM, silkg:Subunit)
+      that project to extra Neo4j node labels via the export label map. Distinct
+      from so_types/so_qualities which are Sequence Ontology CURIEs.
+    range: uriorcurie
+    multivalued: true
+    inlined_as_list: true
+
+  subject:
+    range: uriorcurie
+
+  object:
+    range: uriorcurie
+
+  predicate:
+    range: string
+
+  predicate_id:
+    description: Source-native OWL property CURIE for ontology-derived edges.
+    range: string
+
+  map_location:
+    range: string
+
+  method:
+    description: >
+      The method used in realization of a concept, piece of information, 
+      entity, etc.
+    range: string
+
+  genomic_nucleotide_accession_version:
+    range: string
+
+  rna_nucleotide_accession_version:
+    range: string
+
+  protein_accession_version:
+    range: string
+
+  mature_peptide_accession_version:
+    range: string
+
+  detection_method:
+    range: string
+    multivalued: true
+    inlined_as_list: true
+
+  pubmed_id:
+    range: string
+    multivalued: true
+    inlined_as_list: true
+
+  source_database:
+    range: string
+    multivalued: true
+    inlined_as_list: true
+
+  negated:
+    description: True when the source qualifier includes NOT (e.g. GAF NOT|involved_in).
+    range: boolean
+
+  evidence_code:
+    description: Source evidence code (e.g. GAF Evidence Code column).
+    range: string
+
+  reference:
+    description: Source reference for an association (e.g. PMID, GO_REF).
+    range: string
+
+  with_from:
+    description: Source with/from field (e.g. GAF With (or) From column).
+    range: string
+
+  aspect:
+    description: GO aspect code (F, P, or C) when provided by the source.
+    range: string
+
+  assigned_by:
+    description: Source database or group that assigned the association.
+    range: string
+
+  annotation_date:
+    description: Source annotation date (YYYYMMDD as string when not normalized).
+    range: string

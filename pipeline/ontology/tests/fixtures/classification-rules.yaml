@@ -1,0 +1,16 @@
+version: 1
+rules:
+  - id: readthrough-parent-is-fusion-gene
+    when:
+      edge:
+        class: GeneHasReadthroughParent
+        role: object
+    actions:
+      - annotate:
+          target_entity: Gene
+          slot: so_types
+          value: SO:0000287
+      - propagate_restrictions:
+          from_class: SO:0000287
+          property_map:
+            so:has_quality: so_qualities

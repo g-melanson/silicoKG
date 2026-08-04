@@ -1,0 +1,82 @@
+id: https://w3id.org/silicokg/enums/edge-predicates
+name: silkg_edge_predicates
+title: Edge class to predicate CURIE mapping
+
+default_prefix: silkg
+
+prefixes:
+  silkg: https://w3id.org/silicokg/
+
+imports:
+  - linkml:types
+
+enums:
+  EdgePredicate:
+    description: Predicate CURIE implied by a reified edge class
+    permissible_values:
+      HAS_GENE:
+        meaning: silkg:HAS_GENE
+        description: Chromosome contains a gene
+      MAPS_TO:
+        meaning: silkg:MAPS_TO
+        description: Genomic sequence maps (places) a gene by RefSeq annotation
+      REPRESENTED_BY:
+        meaning: silkg:REPRESENTED_BY
+        description: Chromosome is represented by an assembly genomic sequence
+      SAME_AS:
+        meaning: silkg:SAME_AS
+        description: Cross-reference to an external CURIE
+      HAS_TRANSCRIPT:
+        meaning: silkg:HAS_TRANSCRIPT
+        description: Gene has a RefSeq transcript
+      HAS_TRANSCRIPT_PRODUCT:
+        meaning: silkg:HAS_TRANSCRIPT_PRODUCT
+        description: Gene has a transcript product
+      HAS_PROTEIN_PRODUCT:
+        meaning: silkg:HAS_PROTEIN_PRODUCT
+        description: Transcript has a protein product
+      HAS_MATURE_PEPTIDE_PRODUCT:
+        meaning: silkg:HAS_MATURE_PEPTIDE_PRODUCT
+        description: Protein has a mature peptide product
+      ENCODES_PROTEIN:
+        meaning: silkg:ENCODES_PROTEIN
+        description: Transcript encodes a RefSeq protein
+      GENOMIC_NEIGHBOR_OF:
+        meaning: silkg:GENOMIC_NEIGHBOR_OF
+        description: Genomic neighbour between genes
+      PSEUDOGENE:
+        meaning: silkg:PSEUDOGENE
+        description: Gene related pseudogene
+      READTHROUGH_PARENT:
+        meaning: silkg:READTHROUGH_PARENT
+        description: Readthrough parent gene
+      READTHROUGH_SIBLING:
+        meaning: silkg:READTHROUGH_SIBLING
+        description: Readthrough sibling gene
+      REGION_PARENT:
+        meaning: silkg:REGION_PARENT
+        description: Region parent gene
+      HAS_VARIANT:
+        meaning: silkg:HAS_VARIANT
+        description: Canonical entity has a sequence variant
+      SUBCLASS_OF:
+        meaning: silkg:SUBCLASS_OF
+        description: Child term or group is a subclass of a parent
+      MEMBER_OF:
+        meaning: silkg:MEMBER_OF
+        description: Gene is a member of a gene group
+      HAS_EVIDENCE:
+        meaning: silkg:HAS_EVIDENCE
+        description: An entity is supported by annotated evidence
+      PARTICIPATES_IN:
+        meaning: silkg:PARTICIPATES_IN
+        description: An entity participates in a GO biological process
+      ACTIVE_IN:
+        meaning: silkg:ACTIVE_IN
+        description: An entity is active in a GO cellular component
+      HAS_FUNCTION:
+        meaning: silkg:HAS_FUNCTION
+        description: An entity has a GO molecular function
+      BROAD_MATCH:
+        meaning: silkg:BROAD_MATCH
+        description: An entity broadly matches an ontology term

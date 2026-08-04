@@ -1,0 +1,117 @@
+flowchart LR
+  subgraph BP [LinkML blueprints - build time]
+    direction TB
+    SS["sources/*/*.schema.yaml"]
+    TR["sources/*/*.transform.yaml"]
+    DM["schemas/domain/silicokg.yaml"]
+    IP["schemas/integrate-priorities.yaml"]
+    CR["schemas/ontology/classification-rules.yaml"]
+    GY["gen-yaml - compile - lint"]
+    SS --> GY
+    TR --> GY
+    DM --> GY
+    IP --> GY
+    CR --> GY
+  end
+
+  subgraph ST1 [Stage 1 - Ingest - per source]
+    direction TB
+    NC["NCBI Gene - FTP"]
+    UP["UniProt - GAF"]
+    OB["OBO - GO / SO"]
+    HG["HGNC - CORUM - TFLink - MeSH"]
+    AD["Fetch - parse - normalize"]
+    STG[("1-staging - records.jsonl")]
+    NC --> AD
+    UP --> AD
+    OB --> AD
+    HG --> AD
+    AD --> STG
+  end
+
+  subgraph ST2 [Stage 2 - Validate - per source]
+    direction TB
+    V1["linkml-validate<br/>source schema - fail-fast"]
+    BR[("2-bronze - source-validated")]
+    V1 -->|pass| BR
+  end
+
+  subgraph ST3 [Stage 3 - Transform - per source]
+    direction TB
+    LM["LinkML-Map<br/>*.transform.yaml"]
+    SLV[("3-silver - graph fragments")]
+    LM --> SLV
+  end
+
+  subgraph ST4 [Stage 4 - Integrate - run-level]
+    direction TB
+    MR["Graph merge - entity resolution<br/>dedupe - link - reconcile"]
+    MGD[("4-merged - nodes + edges")]
+    MR --> MGD
+  end
+
+  subgraph ST5 [Stage 5 - Classify - run-level]
+    direction TB
+    CL["SO ontology rules"]
+  end
+
+  subgraph ST6 [Stage 6 - Publish - run-level]
+    direction TB
+    V3["linkml-validate<br/>domain schema - fail-fast"]
+    GLD[("5-gold - domain-conformant")]
+    V3 -->|pass| GLD
+  end
+
+  subgraph ST7 [Stage 7 - Export - optional]
+    direction TB
+    EX["Export Neo4j CSV"]
+    LD["Load Neo4j - admin or Bolt"]
+    EX --> LD
+  end
+
+  subgraph QZ [Quarantine]
+    direction TB
+    Q1[("Source quarantine<br/>rejects + drift report")]
+    Q2[("Integrate quarantine<br/>rejects + resolution report")]
+    Q3[("Domain quarantine<br/>rejects + drift report")]
+  end
+
+  STG --> V1
+  V1 -->|reject| Q1
+
+  BR --> LM
+
+  SLV --> MR
+  MR -->|reject| Q2
+
+  MGD --> CL
+  CL --> V3
+  V3 -->|reject| Q3
+
+  GLD --> EX
+
+  classDef bronze fill:#cd7f32,color:#fff,stroke:#8B4513
+  classDef silver fill:#c0c0c0,color:#1a1a1a,stroke:#808080
+  classDef gold fill:#ffd700,color:#1a1a1a,stroke:#b8860b
+  classDef staging fill:#b8d4e8,color:#1a1a1a,stroke:#5a8fb8
+  classDef merged fill:#9b8ec4,color:#fff,stroke:#6b5b95
+  classDef gate fill:#2b6cb0,color:#fff,stroke:#1a4480
+  classDef domain fill:#4a6741,color:#fff,stroke:#2d4a27
+  classDef build fill:#edf2f7,color:#1a1a1a,stroke:#a0aec0
+  classDef quarantine fill:#c53030,color:#fff,stroke:#9b2c2c
+  classDef integrate fill:#6b46c1,color:#fff,stroke:#553c9a
+  classDef classify fill:#2f855a,color:#fff,stroke:#276749
+  classDef export fill:#dd6b20,color:#fff,stroke:#c05621
+
+  class STG staging
+  class BR bronze
+  class SLV silver
+  class MGD merged
+  class GLD gold
+  class V1,V3 gate
+  class MR integrate
+  class CL classify
+  class EX,LD export
+  class DM,SS,TR,IP,CR domain
+  class GY build
+  class Q1,Q2,Q3 quarantine

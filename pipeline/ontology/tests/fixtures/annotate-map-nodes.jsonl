@@ -1,0 +1,4 @@
+{"id": "silkg:Gene:9606:1", "@type": "Gene", "symbol": "NCRNA1", "type": "ncRNA", "tax_id": "NCBITaxon:9606"}
+{"id": "silkg:Gene:9606:2", "@type": "Gene", "symbol": "SNRNA1", "type": "snRNA", "tax_id": "NCBITaxon:9606"}
+{"id": "silkg:Gene:9606:3", "@type": "Gene", "symbol": "OTHER1", "type": "other", "tax_id": "NCBITaxon:9606"}
+{"id": "silkg:Protein:9606:4", "@type": "Protein", "symbol": "P1", "type": "ncRNA"}

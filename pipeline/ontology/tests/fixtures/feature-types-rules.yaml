@@ -1,0 +1,16 @@
+version: 1
+rules:
+  - id: genomic-region-to-so
+    when:
+      node:
+        "@type": Gene
+        slot: type
+        equals: biological-region
+    actions:
+      - annotate_map:
+          target_entity: Gene
+          slot: so_types
+          from_slot: feature_types
+          map:
+            enhancer: SO:0000165
+            silencer: SO:0000625

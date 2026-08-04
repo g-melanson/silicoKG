@@ -1,0 +1,23 @@
+id: https://w3id.org/silicokg/transform/tflink/tf-interactions
+title: TFLink TF Interactions Transform
+prefixes:
+  silkg: https://w3id.org/silicokg/
+
+class_derivations:
+  TFInteractsWithGene:
+    populated_from: TFLinkInteractionRow
+    slot_derivations:
+      id:
+        expr: "'silkg:TFInteractsWithGene:9606:' + str(tf_id) + ':' + str(target_id)"
+      subject:
+        expr: "'silkg:Protein:9606:' + str(tf_id)"
+      predicate:
+        expr: "'silkg:INTERACTS_WITH'"
+      object:
+        expr: "'silkg:Gene:9606:' + str(target_id)"
+      detection_method:
+        expr: "detection_method"
+      pubmed_id:
+        expr: "pubmed_id"
+      source_database:
+        expr: "source_database"

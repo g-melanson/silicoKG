@@ -1,0 +1,30 @@
+run_id: test-corum
+sources:
+  - source: corum
+    source_name: corum-human-complexes
+  - source: uniprot
+    source_name: uniprot-gaf          # Protein authority merge
+  - source: obo
+    source_name: obo-go               # GO term nodes for edge endpoints
+
+stages:
+  - ingest
+  - validate
+  - transform
+  - integrate
+  - classify
+  - publish
+  - export_neo4j
+
+snapshot_raw: false
+
+classify:
+  source: obo
+  source_name: obo-so
+  rules: schemas/ontology/classification-rules.yaml
+
+publish:
+  schema: schemas/domain/silicokg.yaml
+
+export_neo4j:
+  stub_nodes: true   # allow GO / Protein endpoints if partial run

@@ -1,0 +1,25 @@
+# Golden URI expectations for identity contract (A1BG anchor).
+bronze:
+  tax_id: "9606"
+  gene_id: "1"
+  symbol: A1BG
+  chromosome: "19"
+  dbxrefs:
+    - "MIM:138670"
+    - "HGNC:HGNC:5"
+    - "Ensembl:ENSG00000121410"
+    - "AllianceGenome:HGNC:5"
+
+expected:
+  gene_uri: silkg:Gene:9606:1
+  chromosome_uri: silkg:Chromosome:9606:19
+  taxon_uri: NCBITaxon:9606
+  chromosome_has_gene_uri: silkg:ChromosomeHasGene:9606:19:1
+  normalized_dbxrefs:
+    - OMIM:138670
+    - HGNC:5
+    - Ensembl:ENSG00000121410
+  gene_has_dbxref_ids:
+    - silkg:GeneHasDbXref:9606:1:OMIM_138670
+    - silkg:GeneHasDbXref:9606:1:HGNC_5
+    - silkg:GeneHasDbXref:9606:1:Ensembl_ENSG00000121410

@@ -1,0 +1,98 @@
+id: https://w3id.org/silicokg/protein-complexes
+name: protein-complexes
+title: Protein Complexes
+description: >
+  Domain model for CORUM protein complexes: complex nodes, annotated evidence,
+  subunit membership, complex-to-GO function associations, and Functional
+  Complex Group (FCG) linkage.
+
+default_prefix: silkg
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  silkg: https://w3id.org/silicokg/
+
+imports:
+  - linkml:types
+  - ../classes
+  - ../slots
+
+classes:
+
+### ENTITIES ##################################################################
+
+  ProteinComplex:
+    is_a: NamedThing
+    description: >
+      A manually curated protein complex (one CORUM record). Identity is the
+      external CORUM CURIE (CORUM:{complex_id}).
+    slots:
+      - id
+      - name
+      - description
+      - synonyms
+      - tax_id
+      - class_labels
+
+  AnnotatedEvidence:
+    is_a: NamedThing
+    description: >
+      Free-text evidence and citations backing a curated assertion (one node
+      per CORUM complex). Aggregates comment fields and the deduplicated union
+      of complex- and function-level PubMed ids.
+    slots:
+      - id
+      - description
+      - pubmed_id
+      - class_labels
+
+### REIFIED EDGES ############################################################
+
+  ProteinMemberOfComplex:
+    description: Reified edge — a protein is a subunit member of a protein complex.
+    slots:
+      - id
+      - subject
+      - object
+      - predicate
+
+  ProteinComplexHasEvidence:
+    description: Reified edge — a protein complex is supported by annotated evidence.
+    slots:
+      - id
+      - subject
+      - object
+      - predicate
+
+  ProteinComplexGOAssociation:
+    description: >
+      Reified edge — a protein complex is associated with a GO term. The
+      predicate is aspect-specific (HAS_FUNCTION / ACTIVE_IN / PARTICIPATES_IN)
+      and the edge carries the curating PubMed id(s).
+    slots:
+      - id
+      - subject
+      - object
+      - predicate
+      - pubmed_id
+
+  ProteinComplexMemberOfGeneGroup:
+    description: >
+      Reified edge — a protein complex is a member of a Functional Complex Group
+      (modeled as a GeneGroup). Carries the complex-level PubMed id(s).
+    slots:
+      - id
+      - subject
+      - object
+      - predicate
+      - pubmed_id
+
+  GeneGroupBroadMatchGO:
+    description: >
+      Reified edge — a Functional Complex Group (GeneGroup) broadly matches a GO
+      term describing the group's shared function.
+    slots:
+      - id
+      - subject
+      - object
+      - predicate

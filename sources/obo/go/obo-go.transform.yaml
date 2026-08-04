@@ -1,0 +1,145 @@
+id: https://w3id.org/silicokg/transform/obo/go
+title: GO Transform
+prefixes:
+  silkg: https://w3id.org/silicokg/
+
+class_derivations:
+
+  BiologicalProcess:
+    populated_from: GOTermRow
+    slot_derivations:
+      id:
+        expr: >
+          case(
+            (aspect == 'biological_process',
+            'silkg:BiologicalProcess:' + str(term_id)),
+            (True, None)
+          )
+      name:
+        expr: "label"
+      definition:
+        expr: "definition"
+
+  CellularComponent:
+    populated_from: GOTermRow
+    slot_derivations:
+      id:
+        expr: >
+          case(
+            (aspect == 'cellular_component',
+            'silkg:CellComponent:' + str(term_id)),
+            (True, None)
+          )
+      name:
+        expr: "label"
+      definition:
+        expr: "definition"
+
+  MolecularFunction:
+    populated_from: GOTermRow
+    slot_derivations:
+      id:
+        expr: >
+          case(
+            (aspect == 'molecular_function',
+            'silkg:MolecularFunction:' + str(term_id)),
+            (True, None)
+          )
+      name:
+        expr: "label"
+      definition:
+        expr: "definition"
+
+  GOEdgeDerivation:
+    populated_from: GOEdgeRow
+    slot_derivations:
+      subject:
+        populated_from: subject_id
+      object:
+        populated_from: object_id
+
+  GOIsA:
+    is_a: GOEdgeDerivation
+    populated_from: GOEdgeRow
+    slot_derivations:
+      id:
+        expr: >
+          case(
+            (predicate_id == 'rdfs:subClassOf' and subject_aspect is not None,
+            'silkg:GOIsA:' + str(subject_id) + ':' + str(object_id)),
+            (True, None)
+          )
+      subject:
+        expr: >
+          case(
+            (subject_aspect == 'biological_process',
+            'silkg:BiologicalProcess:' + str(subject_id)),
+            (subject_aspect == 'cellular_component',
+            'silkg:CellComponent:' + str(subject_id)),
+            (subject_aspect == 'molecular_function',
+            'silkg:MolecularFunction:' + str(subject_id)),
+            (True, None)
+          )
+      object:
+        expr: >
+          case(
+            (subject_aspect == 'biological_process',
+            'silkg:BiologicalProcess:' + str(object_id)),
+            (subject_aspect == 'cellular_component',
+            'silkg:CellComponent:' + str(object_id)),
+            (subject_aspect == 'molecular_function',
+            'silkg:MolecularFunction:' + str(object_id)),
+            (True, None)
+          )
+      predicate:
+        expr: "'silkg:SUBCLASS_OF'"
+
+  GOObjectPropertyEdge:
+    is_a: GOEdgeDerivation
+    populated_from: GOEdgeRow
+    slot_derivations:
+      id:
+        expr: >
+          case(
+            (predicate_id != 'rdfs:subClassOf'
+             and str(subject_id).startswith('GO:')
+             and str(object_id).startswith('GO:'),
+            'silkg:GOObjectProperty:' + str(subject_id) + ':' + str(predicate_id) + ':' + str(object_id)),
+            (True, None)
+          )
+      subject:
+        expr: >
+          case(
+            (predicate_id != 'rdfs:subClassOf'
+             and str(subject_id).startswith('GO:')
+             and str(object_id).startswith('GO:'),
+            go_term_uri(subject_id, subject_aspect)),
+            (True, None)
+          )
+      object:
+        expr: >
+          case(
+            (predicate_id != 'rdfs:subClassOf'
+             and str(subject_id).startswith('GO:')
+             and str(object_id).startswith('GO:'),
+            go_term_uri(object_id, object_aspect)),
+            (True, None)
+          )
+      predicate:
+        expr: >
+          case(
+            (predicate_id != 'rdfs:subClassOf'
+             and str(subject_id).startswith('GO:')
+             and str(object_id).startswith('GO:'),
+            go_predicate_label(predicate_id)),
+            (True, None)
+          )
+      predicate_id:
+        expr: >
+          case(
+            (predicate_id != 'rdfs:subClassOf'
+             and str(subject_id).startswith('GO:')
+             and str(object_id).startswith('GO:'),
+            predicate_id),
+            (True, None)
+          )

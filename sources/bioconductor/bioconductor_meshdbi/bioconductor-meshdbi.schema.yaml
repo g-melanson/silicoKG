@@ -1,0 +1,28 @@
+id: https://w3id.org/silicokg/source/bioconductor/meshdbi
+name: bioconductor-meshdbi
+title: Bioconductor MeSHDbi Source Schema
+
+prefixes:
+  silkg: https://w3id.org/silicokg/
+  mesh: https://id.nlm.nih.gov/mesh/
+  linkml: https://w3id.org/linkml/
+
+default_prefix: silkg
+
+imports:
+  - linkml:types
+
+classes:
+  BioconductorMeshDBIRow:
+    description: >
+      A row representing a Gene-to-MeSH node in the Bioconductor 
+      MeSHDbi R resource.
+    attributes:
+      gene_id:
+        description: NCBI/Entrez gene ID number.
+        annotations:
+          silkg:publisher_header: "GENEID"
+      mesh_id:
+        description: MeSH descriptor ID.
+        annotations:
+          silkg:publisher_header: "MESHID"

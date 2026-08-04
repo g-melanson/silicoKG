@@ -1,0 +1,44 @@
+version: 1
+additional_labels:
+  class_labels:
+    silkg:CORUM: CORUM
+    silkg:Subunit: Subunit
+  so_qualities:
+    SO:0000806: Fusion
+  so_types:
+    SO:0000655: ncRNA
+    SO:0000274: snRNA
+    SO:0000275: snoRNA
+    SO:0000253: tRNA
+    SO:0000013: scRNA
+    SO:0000252: rRNA
+    SO:0000234: mRNA
+    SO:0000336: Pseudo
+    SO:0000339: RecombinationHotspot
+    SO:0000165: Enhancer
+    SO:0002191: ImprintingControlRegion
+    SO:0001411: BiologicalRegion
+    SO:0000625: Silencer
+    SO:0000307: CpGIsland
+    SO:0000172: CAATSignal
+    SO:0000037: LocusControlRegion
+    SO:0002203: ReplicationStartSite
+    SO:0002202: RepeatInstabilityRegion
+    SO:0000330: ConservedRegion
+    SO:0000174: TATABox
+    SO:0001021: ChromosomeBreakpoint
+    SO:0002155: MeioticRecombinationRegion
+    SO:0001055: TranscriptionalCisRegulatoryRegion
+    SO:0002205: ResponseElement
+    SO:0002190: EnhancerBlockingElement
+    SO:0000036: MatrixAttachmentRegion
+    SO:0000627: Insulator
+    SO:0000685: DNaseIHypersensitiveSite
+    SO:0001917: CAGECluster
+    SO:0000714: NucleotideMotif
+    SO:0001682: ReplicationRegulatoryRegion
+    SO:0002154: MitoticRecombinationRegion
+    SO:0000167: Promoter
+    SO:0001720: EpigeneticallyModifiedRegion
+    SO:0002094: NonAllelicHomologousRecombinationRegion
+    SO:0002204: NucleotideCleavageSite

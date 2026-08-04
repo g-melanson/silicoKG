@@ -1,0 +1,1 @@
+{"id": "silkg:GeneHasReadthroughParent:9606:100:200", "@type": "GeneHasReadthroughParent", "subject": "silkg:Gene:9606:100", "predicate": "silkg:READTHROUGH_PARENT", "object": "silkg:Gene:9606:200"}

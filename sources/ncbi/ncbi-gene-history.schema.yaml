@@ -1,0 +1,35 @@
+id: https://w3id.org/path-walker/source/ncbi/gene_history
+name: ncbi-gene-history
+title: NCBI Gene History Source Schemas.
+
+prefixes:
+  path: https://w3id.org/path-walker/
+
+default_prefix: path
+
+classes:
+  GeneHistoryRow:
+    description: >
+      A row representing an entity node in the NCBI Gene History resource.
+      https://ftp.ncbi.nlm.nih.gov/gene/DATA/gene_history.gz
+    attributes:
+      tax_id:
+        range: string
+        annotations:
+          path:publisher_header: "tax_id"
+      gene_id:
+        range: string
+        annotations:
+          path:publisher_header: "GeneID"
+      discontinued_gene_id:
+        range: string
+        annotations:
+          path:publisher_header: "Discontinued GeneID"
+      discontinued_symbol:
+        range: string
+        annotations:
+          path:publisher_header: "Discontinued Symbol"
+      discontinue_date::
+        range: string
+        annotations:
+          path:publisher_header: "Discontinue date"

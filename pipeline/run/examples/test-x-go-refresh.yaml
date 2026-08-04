@@ -1,0 +1,32 @@
+run_id: test-x
+sources:
+  - source: obo
+    source_name: obo-go          # only this one gets transform
+  - source: ncbi
+    source_name: ncbi-gene-info  # needed for integrate source list
+  - source: ncbi
+    source_name: ncbi-gene-summary
+  - source: ncbi
+    source_name: ncbi-gene-group
+  - source: tflink
+    source_name: tflink-tf-interactions
+  - source: ncbi
+    source_name: ncbi-gene2refseq
+  - source: ncbi
+    source_name: ncbi-gene-refseq-to-uniprot
+  - source: uniprot
+    source_name: uniprot-gaf
+
+stages:
+  - transform      # obo-go only (other sources skipped automatically)
+  - integrate        # re-reads all 8 silver dirs, merges into gold
+  - publish
+  - export_neo4j
+
+publish:
+  schema: schemas/domain/silicokg.yaml
+  exclude_edge_types:
+    - GeneHasDbXref
+
+export_neo4j:
+  stub_nodes: false

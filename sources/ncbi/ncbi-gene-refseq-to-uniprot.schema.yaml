@@ -1,0 +1,33 @@
+id: https://w3id.org/path-walker/source/ncbi/gene_refseq_to_uniprot
+name: ncbi-gene-refseq-to-uniprot
+title: NCBI Gene RefSeq UniProt Collab Source Schemas
+prefixes:
+  path: https://w3id.org/path-walker/
+default_prefix: path
+
+classes:
+  GeneRefSeqUniProtCollabRow:
+    description: >
+      A row representing an entity node in the NCBI Gene RefSeq UniProt Collab resource.
+      https://ftp.ncbi.nlm.nih.gov/gene/DATA/gene_refseq_uniprot_collab.gz
+    attributes:
+      ncbi_protein_accession:
+        range: string
+        annotations:
+          path:publisher_header: "UniProtKB protein accession"
+      uniprot_protein_accession:
+        range: string
+        annotations:
+          path:publisher_header: "UniProtKB protein accession"
+      ncbi_tax_id:
+        range: string
+        annotations:
+          path:publisher_header: "NCBI_tax_id"
+      uniprot_tax_id:
+        range: string
+        annotations:
+          path:publisher_header: "UniProtKB_tax_id"
+      method:
+        range: string
+        annotations:
+          path:publisher_header: "method"

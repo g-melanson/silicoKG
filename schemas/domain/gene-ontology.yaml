@@ -1,0 +1,68 @@
+id: https://w3id.org/silicokg/gene-ontology
+name: gene-ontology
+title: Gene or Gene Product
+description: Domain model for Gene Ontology terms and relationships.
+
+default_prefix: silkg
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  silkg: https://w3id.org/silicokg/
+
+imports:
+  - linkml:types
+  - ../classes
+  - ../slots
+
+classes:
+
+  GOTerm:
+    is_a: NamedThing
+    abstract: true
+
+  BiologicalProcess:
+    is_a: GOTerm
+    description: A process or activity that occurs within an organism.
+    slots:
+      - id
+      - name
+      - description
+
+  MolecularFunction:
+    is_a: GOTerm
+    description: A function performed by a molecular entity.
+    slots:
+      - id
+      - name
+      - description
+
+  CellularComponent:
+    is_a: GOTerm
+    description: A component of a cell.
+    slots:
+      - id
+      - name
+      - description
+
+  GOTriple:
+    description: Triple between two GO terms.
+    slots:
+      - id
+      - subject
+      - predicate
+      - object
+
+  GOIsA:
+    is_a: GOTriple
+
+  GOObjectPropertyEdge:
+    description: >
+      GO term-to-term relationship extracted from OWL object property
+      restrictions (e.g. part_of, regulates, occurs_in).
+    is_a: GOTriple
+    slots:
+      - id
+      - subject
+      - predicate
+      - object
+      - predicate_id

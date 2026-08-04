@@ -1,0 +1,55 @@
+run_id: test-x
+sources:
+  - source: ncbi
+    source_name: ncbi-gene-info
+  - source: ncbi
+    source_name: ncbi-gene-summary
+  - source: ncbi
+    source_name: ncbi-gene-group
+  - source: tflink
+    source_name: tflink-tf-interactions
+  - source: obo
+    source_name: obo-go
+  - source: ncbi
+    source_name: ncbi-gene2refseq
+  - source: ncbi
+    source_name: ncbi-gene-refseq-to-uniprot
+  - source: uniprot
+    source_name: uniprot-gaf
+  - source: hgnc
+    source_name: hgnc-gene-groups
+  
+
+stages:
+  - ingest
+  - validate
+  - transform
+  - integrate
+  - classify
+  - publish
+  - export_neo4j
+
+snapshot_raw: false
+
+# Optional transform tuning (defaults shown):
+# transform:
+#   parallel_sources: false  # ProcessPool over sources (~1.2× on gene2refseq-heavy runs)
+#   workers: 1               # Intra-source bronze line sharding (use >1 for gene2refseq)
+#   limit: null              # Cap bronze rows for dev runs
+
+transform:
+  parallel_sources: false
+  workers: 4
+
+classify:
+  source: obo
+  source_name: obo-so
+  rules: schemas/ontology/classification-rules.yaml
+
+publish:
+  schema: schemas/domain/silicokg.yaml
+  exclude_edge_types:
+    - GeneHasDbXref
+
+export_neo4j:
+  stub_nodes: false

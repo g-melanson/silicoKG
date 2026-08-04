@@ -1,0 +1,140 @@
+id: https://w3id.org/silicokg/source/corum/human-complexes
+name: corum-human-complexes
+title: CORUM Human Complexes Bronze Source Schema
+description: >
+  Bronze row shapes for CORUM human protein complexes. One JSON complex object
+  is flattened by the adapter into multiple typed rows discriminated by
+  row_kind: complex, subunit, function, and fcg.
+
+prefixes:
+  silkg: https://w3id.org/silicokg/
+  linkml: https://w3id.org/linkml/
+
+default_prefix: silkg
+
+imports:
+  - linkml:types
+
+enums:
+  CorumRowKind:
+    permissible_values:
+      complex:
+        description: One protein complex node plus its annotated evidence.
+      subunit:
+        description: One subunit membership (protein → complex).
+      function:
+        description: One complex → GO function association.
+      fcg:
+        description: One complex → Functional Complex Group membership plus FCG → GO.
+
+classes:
+  CorumComplexRow:
+    description: One CORUM complex (ProteinComplex + AnnotatedEvidence source row).
+    attributes:
+      row_kind:
+        range: CorumRowKind
+        required: true
+      complex_id:
+        range: string
+        required: true
+      complex_name:
+        range: string
+      synonyms:
+        range: string
+        multivalued: true
+        inlined_as_list: true
+      description:
+        range: string
+        description: Joined complex-level comments (comment_complex + comment_members).
+      evidence_description:
+        range: string
+        description: Joined all non-empty comment_* fields for the evidence node.
+      pubmed_ids:
+        range: string
+        multivalued: true
+        inlined_as_list: true
+        description: Deduped union of complex-level and function-level PubMed ids.
+      tax_id:
+        range: string
+      class_labels:
+        range: string
+        multivalued: true
+        inlined_as_list: true
+
+  CorumSubunitRow:
+    description: One CORUM subunit membership (protein stub + MEMBER_OF complex).
+    attributes:
+      row_kind:
+        range: CorumRowKind
+        required: true
+      complex_id:
+        range: string
+        required: true
+      uniprot_id:
+        range: string
+        required: true
+      gene_name:
+        range: string
+      protein_name:
+        range: string
+      tax_id:
+        range: string
+
+  CorumFunctionRow:
+    description: One CORUM complex → GO function association.
+    attributes:
+      row_kind:
+        range: CorumRowKind
+        required: true
+      complex_id:
+        range: string
+        required: true
+      go_id:
+        range: string
+        required: true
+      ontology:
+        range: string
+      predicate:
+        range: string
+        description: Aspect-specific predicate CURIE computed by the adapter.
+      go_object_uri:
+        range: string
+        description: silkg GO term URI computed by the adapter from aspect + go_id.
+      pubmed_ids:
+        range: string
+        multivalued: true
+        inlined_as_list: true
+        description: The single function-level PubMed id (as a list).
+      evi:
+        range: string
+
+  CorumFcgRow:
+    description: One CORUM Functional Complex Group membership (GeneGroup + edges).
+    attributes:
+      row_kind:
+        range: CorumRowKind
+        required: true
+      complex_id:
+        range: string
+        required: true
+      fcg_id:
+        range: string
+        required: true
+      fcg_name:
+        range: string
+      go_id:
+        range: string
+      ontology:
+        range: string
+      go_object_uri:
+        range: string
+        description: silkg GO term URI computed by the adapter from aspect + go_id.
+      pubmed_ids:
+        range: string
+        multivalued: true
+        inlined_as_list: true
+        description: The complex-level PubMed id(s) for the membership edge.
+      class_labels:
+        range: string
+        multivalued: true
+        inlined_as_list: true

@@ -1,0 +1,26 @@
+id: https://w3id.org/silicokg/transform/nih/mesh
+title: NIH MeSH Transform
+prefixes:
+  silkg: https://w3id.org/silicokg/
+  mesh: https://id.nlm.nih.gov/mesh/
+
+# Domain classes (MeSHDescriptor, MeSHBroaderThan) are defined in schemas/domain/.
+# Wire derivations here once the domain schema section lands.
+
+class_derivations:
+
+  NCBIGeneToMeSH:
+    populated_from: BioconductorMeshDBIRow
+    description: >
+      Edge between NCBI/Entrez gene and MeSH descriptor. The association
+      is produced by the Bioconductor MeSHDbi R package; an aggregation of
+      MeSH IDs from published PubMed articles that can be disjointed.
+    slot_derivations:
+      id:
+        expr: "'silkg:NCBIGeneToMeSH:' + str(gene_id) + ':' + str(mesh_id)"
+      subject:
+        expr: "'silkg:Gene:9606:' + str(gene_id)"
+      object:
+        expr: "'silkg:MeSHDescriptor:mesh:' + str(mesh_id)"
+      predicate:
+        expr: "'silkg:HAS_DESCRIPTOR'"

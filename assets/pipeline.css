@@ -1,0 +1,19 @@
+#schemas > rect,
+#schemas > .cluster-label text,
+g.cluster schemas .cluster-label,
+g.cluster:has([id*="schemas"]) .nodeLabel,
+.cluster-label {
+  fill: #000000 !important;
+  color: #000000 !important;
+}
+
+g.cluster:has([id*="schemas"]) rect {
+  stroke: #000000 !important;
+  fill: #fff9c4 !important;
+}
+
+/* Layout-only link; no visible arrow between Once per run_id and Universe tiers */
+#L_per_run_tiers_0,
+g.edgePath:has(#L_per_run_tiers_0) {
+  display: none !important;
+}

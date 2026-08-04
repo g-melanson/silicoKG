@@ -1,0 +1,2 @@
+{"id": "silkg:GeneHasTranscriptProduct:9606:1:NM_1", "@type": "GeneHasTranscriptProduct", "subject": "silkg:Gene:9606:1", "predicate": "silkg:HAS_TRANSCRIPT_PRODUCT", "object": "silkg:Transcript:9606:1:NM_1"}
+{"id": "silkg:GeneHasTranscriptProduct:9606:2:NR_2", "@type": "GeneHasTranscriptProduct", "subject": "silkg:Gene:9606:2", "predicate": "silkg:HAS_TRANSCRIPT_PRODUCT", "object": "silkg:Transcript:9606:2:NR_2"}

@@ -1,0 +1,67 @@
+id: https://w3id.org/silicokg/source/hgnc/gene-groups
+name: hgnc-gene-groups
+title: HGNC Gene Groups Bronze Source Schema
+
+prefixes:
+  silkg: https://w3id.org/silicokg/
+  linkml: https://w3id.org/linkml/
+
+default_prefix: silkg
+
+imports:
+  - linkml:types
+
+enums:
+  HGNCGeneGroupRowKind:
+    permissible_values:
+      gene_group:
+        description: One HGNC gene group (family) node.
+      hierarchy_edge:
+        description: Child gene group → parent gene group hierarchy edge.
+      membership_edge:
+        description: Gene membership in a gene group.
+
+classes:
+  HGNCGeneGroupRow:
+    description: One HGNC gene group from family.csv.
+    attributes:
+      row_kind:
+        range: HGNCGeneGroupRowKind
+        required: true
+      family_id:
+        range: string
+        required: true
+      label:
+        range: string
+        required: true
+      definition:
+        range: string
+
+  HGNCGeneGroupHierarchyRow:
+    description: One parent/child edge from hierarchy.csv.
+    attributes:
+      row_kind:
+        range: HGNCGeneGroupRowKind
+        required: true
+      parent_fam_id:
+        range: string
+        required: true
+      child_fam_id:
+        range: string
+        required: true
+
+  HGNCGeneGroupMembershipRow:
+    description: One gene-to-group membership from gene_has_family.csv.
+    attributes:
+      row_kind:
+        range: HGNCGeneGroupRowKind
+        required: true
+      hgnc_id:
+        range: string
+        required: true
+      family_id:
+        range: string
+        required: true
+      entrez_id:
+        range: string
+        required: true

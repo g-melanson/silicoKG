@@ -1,0 +1,35 @@
+# UniProt GAF 2.2 column layout and identity rules for uniprot-gaf ingest/transform.
+format: gaf-2.2
+
+columns:
+  db: 0
+  db_object_id: 1
+  db_object_symbol: 2
+  qualifier: 3
+  go_id: 4
+  reference: 5
+  evidence_code: 6
+  with_from: 7
+  aspect: 8
+  db_object_name: 9
+  db_object_synonym: 10
+  db_object_type: 11
+  taxon: 12
+  annotation_date: 13
+  assigned_by: 14
+  annotation_extension: 15
+  gene_product_form_id: 16
+
+predicates:
+  mode: passthrough
+  negated_prefix: "NOT|"
+
+filter:
+  tax_id: "9606"
+
+entity_ids:
+  subject: "silkg:Protein:{tax_id}:{db_object_id}"
+  object_by_aspect:
+    F: "silkg:MolecularFunction:{go_id}"
+    P: "silkg:BiologicalProcess:{go_id}"
+    C: "silkg:CellComponent:{go_id}"

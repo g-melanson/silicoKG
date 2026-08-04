@@ -1,0 +1,47 @@
+id: https://w3id.org/silicokg/hgnc-gene-groups
+name: hgnc-gene-groups
+title: HGNC Gene Groups
+description: Domain model for HGNC gene group hierarchy and gene membership.
+
+default_prefix: silkg
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  silkg: https://w3id.org/silicokg/
+
+imports:
+  - linkml:types
+  - ../classes
+  - ../slots
+
+classes:
+  GeneGroup:
+    is_a: NamedThing
+    description: >
+      A named grouping of genes or gene products. Populated from the HGNC gene
+      group (family) hierarchy and from CORUM Functional Complex Groups (FCGs),
+      which mint CORUM:FCG* ids and set class_labels.
+    slots:
+      - id
+      - name
+      - description
+      - class_labels
+
+  GeneGroupBroaderThan:
+    description: >
+      Immediate broader gene group edge in the HGNC family hierarchy
+      (child group → parent group).
+    slots:
+      - id
+      - subject
+      - object
+      - predicate
+
+  GeneMemberOfGeneGroup:
+    description: >
+      Edge between a human NCBI/Entrez gene and an HGNC gene group.
+    slots:
+      - id
+      - subject
+      - object
+      - predicate

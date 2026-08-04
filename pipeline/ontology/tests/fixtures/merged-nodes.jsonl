@@ -1,0 +1,2 @@
+{"id": "silkg:Gene:9606:100", "@type": "Gene", "symbol": "CHILD", "tax_id": "NCBITaxon:9606"}
+{"id": "silkg:Gene:9606:200", "@type": "Gene", "symbol": "PARENT", "tax_id": "NCBITaxon:9606"}

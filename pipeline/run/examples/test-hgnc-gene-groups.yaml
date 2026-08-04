@@ -1,0 +1,22 @@
+run_id: test-hgnc-gene-groups
+sources:
+  - source: ncbi
+    source_name: ncbi-gene-info
+  - source: hgnc
+    source_name: hgnc-gene-groups
+
+stages:
+  - ingest
+  - validate
+  - transform
+  - integrate
+  - publish
+  - export_neo4j
+
+snapshot_raw: false
+
+publish:
+  schema: schemas/domain/silicokg.yaml
+
+export_neo4j:
+  stub_nodes: false

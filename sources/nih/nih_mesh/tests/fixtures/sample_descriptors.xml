@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE DescriptorRecordSet SYSTEM "https://www.nlm.nih.gov/databases/dtd/nlmmedicaldatabasedescriptorrecordset.dtd">
+<DescriptorRecordSet>
+  <DescriptorRecord>
+    <DescriptorUI>D000001</DescriptorUI>
+    <DescriptorName><String>Child Term</String></DescriptorName>
+    <TreeNumberList>
+      <TreeNumber>D05.500.100</TreeNumber>
+    </TreeNumberList>
+    <ConceptList>
+      <Concept PreferredConceptYN="Y">
+        <ScopeNote>A child descriptor.</ScopeNote>
+        <TermList>
+          <Term><String>Child Term</String></Term>
+          <Term IsPermutedTermYN="Y"><String>Term Child</String></Term>
+          <Term><String>Child Synonym</String></Term>
+        </TermList>
+      </Concept>
+    </ConceptList>
+  </DescriptorRecord>
+  <DescriptorRecord>
+    <DescriptorUI>D000002</DescriptorUI>
+    <DescriptorName><String>Parent Term</String></DescriptorName>
+    <TreeNumberList>
+      <TreeNumber>D05.500</TreeNumber>
+    </TreeNumberList>
+    <ConceptList>
+      <Concept PreferredConceptYN="Y">
+        <TermList>
+          <Term><String>Parent Term</String></Term>
+        </TermList>
+      </Concept>
+    </ConceptList>
+  </DescriptorRecord>
+  <DescriptorRecord>
+    <DescriptorUI>D000003</DescriptorUI>
+    <DescriptorName><String>Outside Allowlist</String></DescriptorName>
+    <TreeNumberList>
+      <TreeNumber>D01.100</TreeNumber>
+    </TreeNumberList>
+    <ConceptList>
+      <Concept PreferredConceptYN="Y">
+        <TermList>
+          <Term><String>Outside Allowlist</String></Term>
+        </TermList>
+      </Concept>
+    </ConceptList>
+  </DescriptorRecord>
+  <DescriptorRecord>
+    <DescriptorUI>D000004</DescriptorUI>
+    <DescriptorName><String>Leaf Term</String></DescriptorName>
+    <TreeNumberList>
+      <TreeNumber>D05.875</TreeNumber>
+    </TreeNumberList>
+    <ConceptList>
+      <Concept PreferredConceptYN="Y">
+        <TermList>
+          <Term><String>Leaf Term</String></Term>
+        </TermList>
+      </Concept>
+    </ConceptList>
+  </DescriptorRecord>
+</DescriptorRecordSet>

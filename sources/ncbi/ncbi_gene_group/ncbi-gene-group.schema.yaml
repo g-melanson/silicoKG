@@ -1,0 +1,48 @@
+id: https://w3id.org/path-walker/source/ncbi/gene-group
+name: ncbi-gene-group
+title: NCBI Gene Group Source Schemas
+default_prefix: path
+
+classes:
+  NCBIGeneGroupRow:
+    description: >
+      A row representing an entity node in the NCBI Gene Group resource.
+      https://ftp.ncbi.nlm.nih.gov/gene/DATA/gene_group.gz
+    attributes:
+      tax_id:
+        range: string
+        annotations:
+          path:publisher_header: "tax_id"
+      gene_id:
+        range: string
+        annotations:
+          path:publisher_header: "GeneID"
+      relationship:
+        range: string
+        annotations:
+          path:publisher_header: "relationship"
+      other_tax_id:
+        range: string
+        annotations:
+          path:publisher_header: "Other_tax_id"
+      other_gene_id:
+        range: string
+        annotations:
+          path:publisher_header: "Other_GeneID"
+      subject_uri:
+        range: string
+        description: Derived Gene URI for subject (tax_id:gene_id).
+      object_uri:
+        range: string
+        description: >
+          Derived Gene URI for object (tax_id:other_gene_id), matching the
+          historical transform which scopes object by tax_id not other_tax_id.
+      edge_class:
+        range: string
+        description: Derived reified edge class for this relationship, if any.
+      edge_id:
+        range: string
+        description: Derived edge id when relationship maps to an edge class.
+      edge_predicate:
+        range: string
+        description: Derived predicate CURIE for the edge class.

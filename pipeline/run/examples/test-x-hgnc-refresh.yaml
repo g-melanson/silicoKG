@@ -1,0 +1,41 @@
+# Refresh test-x after ingesting hgnc-gene-groups (ingest/validate/transform first).
+# Re-merge all silver sources, publish, and export Neo4j.
+run_id: test-x
+sources:
+  - source: ncbi
+    source_name: ncbi-gene-info
+  - source: ncbi
+    source_name: ncbi-gene-summary
+  - source: ncbi
+    source_name: ncbi-gene-group
+  - source: tflink
+    source_name: tflink-tf-interactions
+  - source: obo
+    source_name: obo-go
+  - source: ncbi
+    source_name: ncbi-gene2refseq
+  - source: ncbi
+    source_name: ncbi-gene-refseq-to-uniprot
+  - source: uniprot
+    source_name: uniprot-gaf
+  - source: hgnc
+    source_name: hgnc-gene-groups
+
+stages:
+  - integrate
+  - classify
+  - publish
+  - export_neo4j
+
+classify:
+  source: obo
+  source_name: obo-so
+  rules: schemas/ontology/classification-rules.yaml
+
+publish:
+  schema: schemas/domain/silicokg.yaml
+  exclude_edge_types:
+    - GeneHasDbXref
+
+export_neo4j:
+  stub_nodes: false

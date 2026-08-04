@@ -1,0 +1,96 @@
+id: https://w3id.org/silicokg/transform/ncbi/gene-info
+title: NCBI Gene Info Transform
+prefixes:
+  silkg: https://w3id.org/silicokg/
+
+class_derivations:
+
+  Gene:
+    populated_from: NCBIGeneInfoRow
+    slot_derivations:
+      id:
+        expr: "'silkg:Gene:' + str(tax_id) + ':' + str(gene_id)"
+      symbol:
+        expr: "symbol"
+      name:
+        expr: "full_name_from_nomenclature_authority"
+      type:
+        expr: "type_of_gene"
+      tax_id:
+        expr: "'NCBITaxon:' + str(tax_id)"
+      synonyms:
+        expr: "all_synonyms"
+
+  Transcript:
+    populated_from: NCBIGeneInfoRow
+    slot_derivations:
+      id:
+        expr: "'silkg:Transcript:' + str(tax_id) + ':' + str(gene_id)"
+      symbol:
+        expr: "symbol"
+
+  Protein:
+    populated_from: NCBIGeneInfoRow
+    slot_derivations:
+      id:
+        expr: >
+          case(
+            (type_of_gene == 'protein-coding',
+            'silkg:Protein:' + str(tax_id) + ':' + str(gene_id)),
+            (True, None)
+          )
+      symbol:
+        expr: "symbol"
+
+  Chromosome:
+    populated_from: NCBIGeneInfoRow
+    slot_derivations:
+      id:
+        expr: "'silkg:Chromosome:' + str(tax_id) + ':' + str(chromosome)"
+      name:
+        expr: "'Chromosome:' + str(chromosome)"
+      tax_id:
+        expr: "'NCBITaxon:' + str(tax_id)"
+
+  GeneHasTranscriptProduct:
+    populated_from: NCBIGeneInfoRow
+    slot_derivations:
+      id:
+        expr: "'silkg:GeneHasTranscriptProduct:' + str(tax_id) + ':' + str(gene_id)"
+      subject:
+        expr: "'silkg:Gene:' + str(tax_id) + ':' + str(gene_id)"
+      predicate:
+        expr: "'silkg:HAS_TRANSCRIPT_PRODUCT'"
+      object:
+        expr: "'silkg:Transcript:' + str(tax_id) + ':' + str(gene_id)"
+
+  TranscriptHasProteinProduct:
+    populated_from: NCBIGeneInfoRow
+    slot_derivations:
+      id:
+        expr: >        
+          case(
+            (type_of_gene == 'protein-coding',
+            'silkg:TranscriptHasProteinProduct:' + str(tax_id) + ':' + str(gene_id)),
+            (True, None)
+          )
+      subject:
+        expr: "'silkg:Transcript:' + str(tax_id) + ':' + str(gene_id)"
+      predicate:
+        expr: "'silkg:HAS_PROTEIN_PRODUCT'"
+      object:
+        expr: "'silkg:Protein:' + str(tax_id) + ':' + str(gene_id)"
+
+  ChromosomeHasGene:
+    populated_from: NCBIGeneInfoRow
+    slot_derivations:
+      id:
+        expr: "'silkg:ChromosomeHasGene:' + str(tax_id) + ':' + str(chromosome) + ':' + str(gene_id)"
+      subject:
+        expr: "'silkg:Chromosome:' + str(tax_id) + ':' + str(chromosome)"
+      predicate:
+        expr: "'silkg:HAS_GENE'"
+      object:
+        expr: "'silkg:Gene:' + str(tax_id) + ':' + str(gene_id)"
+      map_location:
+        expr: "map_location"

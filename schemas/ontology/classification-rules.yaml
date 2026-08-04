@@ -1,0 +1,172 @@
+# Classification rules for pipeline.ontology.classify
+#
+# Document shape:
+#   version: <int>
+#   rules:   list of rule objects (non-empty)
+#
+# Each rule:
+#   id:      unique string
+#   when:    exactly one of edge | node
+#   actions: non-empty list of action objects
+#
+# --- when (match conditions) -----------------------------------------------
+#
+# when.edge:   (supported)
+#   class:     edge @type to match (e.g. GeneHasReadthroughParent)
+#   role:      subject | object
+#              which edge endpoint is the entity to classify
+#
+# when.node:   (supported)
+#   @type:     optional node @type filter (entity class only; not the Gene.type slot)
+#   slot:      optional property slot name for exact-match rules
+#   equals:    optional property value to match (used with slot)
+#
+# --- actions (applied to each matched target) ------------------------------
+#
+# annotate:    (supported)
+#   target_entity: node @type filter (e.g. Gene); skips non-matching nodes
+#   slot:          multivalued slot to append (e.g. so_types)
+#   value:         CURIE to append (must exist in ontology index.classes)
+#
+# annotate_map:  (supported)
+#   target_entity: node @type filter (e.g. Gene)
+#   slot:          multivalued slot to append (e.g. so_types)
+#   from_slot:     node property to look up (e.g. type); scalar or multivalued
+#                  list (each value mapped independently, union+dedupe)
+#   from_role:     optional subject | object (edge rules only)
+#                  When set, read from_slot from that edge endpoint
+#                  instead of the annotation target (e.g. inherit Gene.type
+#                  onto a Transcript matched as edge object).
+#   map:           non-empty mapping of property value → SO CURIE
+#                  Every map value must exist in ontology index.classes.
+#                  Unmapped values are skipped; counted on classify-manifest
+#                  (unmapped_slot_value_count / unmapped_slot_values).
+#
+# propagate_restrictions:  (supported)
+#   from_class:    SO class whose restrictions_index entry is read
+#                  (must exist in ontology index.classes)
+#   property_map:  mapping of OWL property CURIE → node slot
+#                  e.g. so:has_quality: so_qualities
+#                  For each matching restriction, appends filler to that slot.
+#                  Fillers missing from index.classes warn only.
+#                  Note: from_class is fixed; it does not iterate annotate_map hits.
+#
+# emit_edge:   (parsed, ignored by the engine today)
+#   class:     edge class name to emit
+#   predicate: edge predicate CURIE/string
+#   object:    object template (e.g. "{restriction.filler}")
+#
+# Slot appends are union+dedupe (order-preserving). Re-running classify is
+# idempotent for annotate / annotate_map / propagate_restrictions.
+
+
+version: 1
+rules:
+  - id: protein-member-of-complex-is-subunit
+    when:
+      edge:
+        class: ProteinMemberOfComplex
+        role: subject               # the member Protein is the subject endpoint
+    actions:
+      - annotate:
+          target_entity: Protein
+          slot: class_labels
+          value: silkg:Subunit
+
+  - id: readthrough-parent-is-fusion-gene
+    when:
+      edge:
+        class: GeneHasReadthroughParent
+        role: object               # parent gene = object endpoint
+    actions:
+      - annotate:
+          target_entity: Gene
+          slot: so_types
+          value: SO:0000287
+      - propagate_restrictions:
+          from_class: SO:0000287
+          property_map:
+            so:has_quality: so_qualities
+
+  - id: gene-type-to-so
+    when:
+      node:
+        "@type": Gene
+    actions:
+      - annotate_map:
+          target_entity: Gene
+          slot: so_types
+          from_slot: type
+          map:
+            ncRNA: SO:0000655
+            snRNA: SO:0000274
+            snoRNA: SO:0000275
+            tRNA: SO:0000253
+            scRNA: SO:0000013
+            rRNA: SO:0000252
+            protein-coding: SO:0000234
+            pseudo: SO:0000336
+            biological-region: SO:0001411
+
+  - id: transcript-type-to-so
+    when:
+      edge:
+        class: GeneHasTranscriptProduct
+        role: object               # annotate the Transcript
+    actions:
+      - annotate_map:
+          target_entity: Transcript
+          slot: so_types
+          from_slot: type
+          from_role: subject       # inherit Gene.type from edge subject
+          map:
+            ncRNA: SO:0000655
+            snRNA: SO:0000274
+            snoRNA: SO:0000275
+            tRNA: SO:0000253
+            scRNA: SO:0000013
+            rRNA: SO:0000252
+            protein-coding: SO:0000234
+            pseudo: SO:0000336
+            biological-region: SO:0001411
+
+  - id: genomic-region-to-so
+    when:
+      node:
+        "@type": Gene
+        slot: type
+        equals: biological-region
+    actions:
+      - annotate_map:
+          target_entity: Gene
+          slot: so_types
+          from_slot: feature_types
+          map:
+            recombination_hotspot: SO:0000339
+            enhancer: SO:0000165
+            imprinting_control_region: SO:0002191
+            micrococcal_nuclease_hypersensitive_site: SO:0000685
+            silencer: SO:0000625
+            GC_signal: SO:0000307
+            CAAT_signal: SO:0000172
+            locus_control_region: SO:0000037
+            replication_start_site: SO:0002203
+            repeat_instability_region: SO:0002202
+            conserved_region: SO:0000330
+            TATA_box: SO:0000174
+            chromosome_breakpoint: SO:0001021
+            meiotic: SO:0002155
+            transcriptional_cis_regulatory_region: SO:0001055
+            response_element: SO:0002205
+            enhancer_blocking_element: SO:0002190
+            matrix_attachment_region: SO:0000036
+            insulator: SO:0000627
+            DNase_I_hypersensitive_site: SO:0000685
+            CAGE_cluster: SO:0001917
+            nucleotide_motif: SO:0000714
+            replication_regulatory_region: SO:0001682
+            mitotic: SO:0002154
+            promoter: SO:0000167
+            epigenetically_modified_region: SO:0001720
+            non_allelic_homologous: SO:0002094
+            nucleotide_cleavage_site: SO:0002204

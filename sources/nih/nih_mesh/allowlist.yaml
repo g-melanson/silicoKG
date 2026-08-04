@@ -1,0 +1,14 @@
+# Tree-number prefixes for partial MeSH descriptor ingestion.
+# A descriptor is kept when any of its tree numbers matches a prefix
+# (exact match or dot-separated descendant).
+leaf:
+  - D05.875
+roots:
+  - D05.500
+  - D06.472
+  - D08.244
+  - D08.622
+  - D08.811
+  - D12.644
+  - D12.776
+  - D12.888

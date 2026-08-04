@@ -1,0 +1,43 @@
+id: https://w3id.org/silicokg/source/obo/go/schema
+name: obo-go-schema
+title: GO Bronze Source Schema
+
+prefixes:
+  silkg: https://w3id.org/silicokg/
+  linkml: https://w3id.org/linkml/
+  
+default_prefix: silkg
+
+imports:
+  - linkml:types
+  - ../../../schemas/style/owl
+
+enums:
+  GOAspects:
+    permissible_values:
+      biological_process:
+        description: A biological process.
+      cellular_component:
+        description: A cellular component.
+      molecular_function:
+        description: A molecular function.
+
+classes:
+  GOTermRow:
+    is_a: OntologyTermRow
+    description: >
+      One GO term. Full-file extraction: every named GO term in
+      http://purl.obolibrary.org/obo/go.owl becomes one row.
+    attributes:
+      aspect:
+        range: GOAspects
+        description: The GO aspect of the term (BP, MF, or CC).
+      definition:
+        range: string
+        description: The definition of the term.
+
+  GOEdgeRow:
+    is_a: OntologyEdgeRow
+    description: >
+      One GO edge. Full-file extraction: every named GO edge in
+      http://purl.obolibrary.org/obo/go.owl becomes one row.

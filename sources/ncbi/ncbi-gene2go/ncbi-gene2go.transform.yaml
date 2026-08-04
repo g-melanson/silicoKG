@@ -1,0 +1,11 @@
+id: https://w3id.org/silicokg/transform/ncbi/gene2go
+title: NCBI Gene2GO Transform
+prefixes:
+  silkg: https://w3id.org/silicokg/
+
+class_derivations:
+  GOAnnotationEdge:
+    populated_from: NCBIGene2GORow
+    slot_derivations:
+      id:
+        expr: "'silkg:Gene:' + str(tax_id) + ':' + str(gene_id)"

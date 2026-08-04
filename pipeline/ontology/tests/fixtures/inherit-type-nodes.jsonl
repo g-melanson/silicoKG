@@ -1,0 +1,4 @@
+{"id": "silkg:Gene:9606:1", "@type": "Gene", "symbol": "G1", "type": "ncRNA", "tax_id": "NCBITaxon:9606"}
+{"id": "silkg:Gene:9606:2", "@type": "Gene", "symbol": "G2", "type": "snRNA", "tax_id": "NCBITaxon:9606"}
+{"id": "silkg:Transcript:9606:1:NM_1", "@type": "Transcript", "symbol": "T1", "tax_id": "NCBITaxon:9606"}
+{"id": "silkg:Transcript:9606:2:NR_2", "@type": "Transcript", "symbol": "T2", "tax_id": "NCBITaxon:9606"}

@@ -1,0 +1,93 @@
+id: https://w3id.org/silicokg/style/owl
+name: owl-style
+title: OWL Bronze Row Shapes
+description: >
+  Bronze row shapes for the obo-so ontology refresh run. The OWL adapter emits
+  one mixed JSONL stream of class rows and restriction rows, discriminated by
+  row_kind. These rows are validated here, then compiled into
+  universe/cache/obo-so/index.yaml. 
+  
+  They do not go through transform/integrate.
+
+prefixes:
+  silkg: https://w3id.org/silicokg/
+  linkml: https://w3id.org/linkml/
+  
+default_prefix: silkg
+
+imports:
+  - linkml:types
+  - ../../schemas/enums/source-features
+
+enums:
+  BronzeRowKind:
+    permissible_values:
+      class:
+        description: An owl:Class term extracted from so.owl.
+      restriction:
+        description: An extracted owl:someValuesFrom restriction row.
+      term:
+        description: An owl:Class term extracted from go.owl.
+      edge:
+        description: An extracted GO-to-GO edge row.
+
+  RestrictionType:
+    permissible_values:
+      some_values_from:
+        description: An owl:someValuesFrom restriction row.
+
+classes:
+  OntologyTermRow:
+    description: >
+      One GO term. Full-file extraction: every named GO term in
+      http://purl.obolibrary.org/obo/go.owl becomes one row.
+    attributes:
+      row_kind:
+        range: BronzeRowKind
+        required: true
+      term_id:
+        range: string
+        required: true
+        description: OBO-style CURIE, e.g. SO:0000287.
+      iri:
+        range: string
+        required: true
+        description: Canonical class IRI, e.g. http://purl.obolibrary.org/obo/SO_0000287.
+      label:
+        range: string
+        description: rdfs:label when present.
+      synonyms:
+        range: string
+        multivalued: true
+        description: Values from oboInOwl:*Synonym annotation properties.
+      aspect:
+        range: GOAspects
+        description: The GO aspect of the term (BP, MF, or CC).
+      definition:
+        range: string
+        description: The definition of the term.
+
+  OntologyEdgeRow:
+    description: Base triple row for OWL edges.
+    attributes:
+      row_kind:
+        range: BronzeRowKind
+        required: true
+      subject_id:
+        range: string
+        required: true
+        description: The subject term ID.
+      subject_aspect:
+        range: GOAspects
+        description: The GO aspect of the subject term.
+      predicate_id:
+        range: string
+        required: true
+        description: The predicate ID.
+      object_id:
+        range: string
+        required: true
+        description: The object term ID.
+      object_aspect:
+        range: GOAspects
+        description: The GO aspect of the object term, when the object is a GO term.

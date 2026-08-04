@@ -1,0 +1,47 @@
+id: https://w3id.org/silicokg/source/tflink/tf-interactions
+name: tflink-tf-interactions
+title: TFLink TF Interactions Source Schemas
+prefixes:
+  path: https://w3id.org/silicokg/
+default_prefix: silkg
+
+classes:
+  TFLinkInteractionRow:
+    description: >
+      A row representing an entity node in the TFLink TF Interactions resource.
+      https://cdn.netbiol.org/tflink/download_files/TFLink_Homo_sapiens_interactions_All_simpleFormat_v1.0.tsv.gz
+    attributes:
+      tf_id:
+        range: string
+        annotations:
+          silkg:publisher_header: "NCBI.GeneID.TF"
+      target_id:
+        range: string
+        annotations:
+          silkg:publisher_header: "NCBI.GeneID.Target"
+      tf_name:
+        range: string
+        annotations:
+          silkg:publisher_header: "Name.TF"
+      target_name:
+        range: string
+        annotations:
+          silkg:publisher_header: "Name.Target"
+      detection_method:
+        range: string
+        multivalued: true
+        delimiter: ";"
+        annotations:
+          silkg:publisher_header: "Detection.method"
+      pubmed_id:
+        range: string
+        multivalued: true
+        delimiter: ";"
+        annotations:
+          silkg:publisher_header: "PubmedID"
+      source_database:
+        range: string
+        multivalued: true
+        delimiter: ";"
+        annotations:
+          silkg:publisher_header: "Source.database"

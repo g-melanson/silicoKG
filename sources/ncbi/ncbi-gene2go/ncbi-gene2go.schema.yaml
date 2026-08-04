@@ -1,0 +1,34 @@
+id: https://w3id.org/silicokg/source/ncbi/gene2go
+name: ncbi-gene2go
+title: NCBI Gene2GO Source Schemas
+prefixes:
+  path: https://w3id.org/silicokg/
+default_prefix: silkg
+
+classes:
+  NCBIGene2GORow:
+    description: >
+      A row representing an entity node in the NCBI Gene2GO resource.
+      https://ftp.ncbi.nlm.nih.gov/gene/DATA/gene2go.gz
+    attributes:
+      tax_id:
+        range: string
+        annotations:
+          silkg:publisher_header: "tax_id"
+      gene_id:
+        range: string
+        annotations:
+          silkg:publisher_header: "GeneID"
+      go_id:
+        range: string
+        annotations:
+          silkg:publisher_header: "GO_ID"
+      qualifier:
+        range: string
+        annotations:
+          silkg:publisher_header: "Qualifier"
+      evidence_code:
+        range: string
+        annotations:
+          silkg:publisher_header: "Evidence"
+    

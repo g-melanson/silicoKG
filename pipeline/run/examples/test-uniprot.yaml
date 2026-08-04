@@ -1,0 +1,25 @@
+run_id: test-uniprot
+sources:
+  - source: ncbi
+    source_name: ncbi-gene-refseq-to-uniprot
+stages:
+  - ingest
+  - validate
+  - transform
+  - integrate
+  - publish
+
+snapshot_raw: false
+
+transform:
+  parallel_sources: false
+  workers: 1
+
+publish:
+  schema: schemas/domain/silicokg.yaml
+
+# Optional transform tuning (defaults shown):
+# transform:
+#   parallel_sources: false  # ProcessPool over sources (~1.2× on gene2refseq-heavy runs)
+#   workers: 1               # Intra-source bronze line sharding (use >1 for gene2refseq)
+#   limit: null              # Cap bronze rows for dev runs

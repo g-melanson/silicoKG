@@ -1,0 +1,42 @@
+id: https://w3id.org/silicokg/transform/hgnc/gene-groups
+title: HGNC Gene Groups Transform
+prefixes:
+  silkg: https://w3id.org/silicokg/
+
+class_derivations:
+
+  GeneGroup:
+    populated_from: HGNCGeneGroupRow
+    slot_derivations:
+      id:
+        expr: "'silkg:GeneGroup:hgnc:' + str(family_id)"
+      name:
+        expr: "label"
+      description:
+        expr: "definition"
+
+  GeneGroupBroaderThan:
+    populated_from: HGNCGeneGroupHierarchyRow
+    slot_derivations:
+      id:
+        expr: >
+          'silkg:GeneGroupBroaderThan:' + str(child_fam_id) + ':' + str(parent_fam_id)
+      subject:
+        expr: "'silkg:GeneGroup:hgnc:' + str(child_fam_id)"
+      object:
+        expr: "'silkg:GeneGroup:hgnc:' + str(parent_fam_id)"
+      predicate:
+        expr: "'silkg:SUBCLASS_OF'"
+
+  GeneMemberOfGeneGroup:
+    populated_from: HGNCGeneGroupMembershipRow
+    slot_derivations:
+      id:
+        expr: >
+          'silkg:GeneMemberOfGeneGroup:9606:' + str(entrez_id) + ':' + str(family_id)
+      subject:
+        expr: "'silkg:Gene:9606:' + str(entrez_id)"
+      object:
+        expr: "'silkg:GeneGroup:hgnc:' + str(family_id)"
+      predicate:
+        expr: "'silkg:MEMBER_OF'"

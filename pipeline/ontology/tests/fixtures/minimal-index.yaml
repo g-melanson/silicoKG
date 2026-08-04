@@ -1,0 +1,60 @@
+version: 1
+source_name: obo-so
+input_hash: test-fixture-hash
+classes:
+  SO:0000013:
+    label: scRNA
+    parents:
+    - SO:0000655
+  SO:0000234:
+    label: mRNA
+    parents:
+    - SO:0000673
+  SO:0000252:
+    label: rRNA
+    parents:
+    - SO:0000655
+  SO:0000253:
+    label: tRNA
+    parents:
+    - SO:0000655
+  SO:0000274:
+    label: snRNA
+    parents:
+    - SO:0000655
+  SO:0000275:
+    label: snoRNA
+    parents:
+    - SO:0000655
+  SO:0000287:
+    label: fusion_gene
+    parents:
+    - SO:0000704
+  SO:0000336:
+    label: pseudogene
+    parents:
+    - SO:0000704
+  SO:0000655:
+    label: ncRNA
+    parents:
+    - SO:0000673
+  SO:0000165:
+    label: enhancer
+    parents:
+    - SO:0001411
+  SO:0000625:
+    label: silencer
+    parents:
+    - SO:0001411
+  SO:0001411:
+    label: biological_region
+    parents:
+    - SO:0000001
+  SO:0000806:
+    label: chimeric
+    parents: []
+restrictions_index:
+  SO:0000287:
+  - type: some_values_from
+    property: so:has_quality
+    filler: SO:0000806

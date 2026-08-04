@@ -1,0 +1,3 @@
+{"id": "silkg:Gene:9606:1", "@type": "Gene", "type": "biological-region", "feature_types": ["enhancer", "silencer"]}
+{"id": "silkg:Gene:9606:2", "@type": "Gene", "type": "biological-region", "feature_types": ["enhancer", "unknown_token"]}
+{"id": "silkg:Gene:9606:3", "@type": "Gene", "type": "protein-coding"}

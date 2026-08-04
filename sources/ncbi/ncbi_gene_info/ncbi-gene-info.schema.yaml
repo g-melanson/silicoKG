@@ -1,0 +1,90 @@
+id: https://w3id.org/silicokg/source/ncbi/gene-info
+name: ncbi-gene-info
+title: NCBI Gene Info Source Schemas
+prefixes:
+  path: https://w3id.org/silicokg/
+default_prefix: silkg
+
+classes:
+  NCBIGeneInfoRow:
+    description: >
+      A row representing an entity node in the NCBI Gene Info resource.
+      https://ftp.ncbi.nlm.nih.gov/gene/DATA/gene_info.gz
+    attributes:
+      tax_id:
+        range: string
+        annotations:
+          silkg:publisher_header: "tax_id"
+      gene_id:
+        range: string
+        annotations:
+          silkg:publisher_header: "GeneID"
+      symbol:
+        range: string
+        annotations:
+          silkg:publisher_header: "Symbol"
+      locus_tag:
+        range: string
+        annotations:
+          silkg:publisher_header: "LocusTag"
+      synonyms:
+        range: string
+        multivalued: true
+        delimiter: "|"
+        annotations:
+          silkg:publisher_header: "Synonyms"
+      dbxrefs:
+        range: string
+        multivalued: true
+        delimiter: "|"
+        annotations:
+          silkg:publisher_header: "dbXrefs"
+      chromosome:
+        range: string
+        annotations:
+          silkg:publisher_header: "chromosome"
+      map_location:
+        range: string
+        annotations:
+          silkg:publisher_header: "map_location"
+      description:
+        range: string
+        annotations:
+          silkg:publisher_header: "description"
+      type_of_gene:
+        range: string
+        annotations:
+          silkg:publisher_header: "type_of_gene"
+      symbol_from_nomenclature_authority:
+        range: string
+        annotations:
+          silkg:publisher_header: "Symbol_from_nomenclature_authority"
+      full_name_from_nomenclature_authority:
+        range: string
+        annotations:
+          silkg:publisher_header: "Full_name_from_nomenclature_authority"
+      nomenclature_status:
+        range: string
+        annotations:
+          silkg:publisher_header: "Nomenclature_status"
+      other_designations:
+        range: string
+        multivalued: true
+        delimiter: "|"
+        annotations:
+          silkg:publisher_header: "Other_designations"
+      all_synonyms:
+        range: string
+        multivalued: true
+        description: >
+          Derived at ingest: ordered unique merge of symbol, synonyms,
+          symbol_from_nomenclature_authority, full_name_from_nomenclature_authority,
+          and other_designations. Not a publisher column.
+      modification_date:
+        range: string
+        annotations:
+          silkg:publisher_header: "Modification_date"
+      feature_type:
+        range: string
+        annotations:
+          silkg:publisher_header: "Feature_type"
