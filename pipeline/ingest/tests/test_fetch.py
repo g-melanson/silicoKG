@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import gzip
 import urllib.request
 from pathlib import Path
@@ -43,8 +44,11 @@ def test_download_sends_user_agent(tmp_path: Path, monkeypatch):
     captured: dict[str, list[str]] = {}
 
     class FakeResponse:
+        def __init__(self) -> None:
+            self._body = io.BytesIO(b"ok\n")
+
         def read(self, n: int = -1) -> bytes:
-            return b"ok\n"
+            return self._body.read(n)
 
         def __enter__(self) -> FakeResponse:
             return self
@@ -63,4 +67,4 @@ def test_download_sends_user_agent(tmp_path: Path, monkeypatch):
     dest = tmp_path / "sample.tsv"
     _download("http://example.com/sample.tsv", dest)
     assert dest.read_text(encoding="utf-8") == "ok\n"
-    assert captured["user_agent"] == [_USER_AGENT]
+    assert captured["user_agent"] == _USER_AGENT
