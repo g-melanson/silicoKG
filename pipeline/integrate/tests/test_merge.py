@@ -2,6 +2,7 @@ from pipeline.integrate.merge import (
     _dedup_key,
     apply_edge_contribution,
     apply_node_contribution,
+    edge_payload_conflicts,
     finalize_node,
     merge_edge_fragments,
     merge_node_fragments,
@@ -149,3 +150,88 @@ def test_fold_matches_batch_edge_merge():
         merged = apply_edge_contribution(merged, contribution)
 
     assert merged == batch
+
+
+def _maps_gene_contribution(
+    *,
+    start: str,
+    end: str,
+    status: str,
+    bronze_line: int,
+    source_name: str = "ncbi-gene2refseq",
+) -> tuple:
+    return (
+        source_name,
+        {
+            "id": "silkg:GenomicSequenceMapsGene:9606:NC_000019.10:1",
+            "@type": "GenomicSequenceMapsGene",
+            "subject": "silkg:GenomicSequence:9606:NC_000019.10",
+            "predicate": "silkg:MAPS_TO",
+            "object": "silkg:Gene:9606:1",
+            "start": start,
+            "end": end,
+            "status": status,
+        },
+        {
+            "source_name": source_name,
+            "silver_run_id": "r1",
+            "bronze_line": bronze_line,
+        },
+    )
+
+
+def test_first_edge_payload_wins_conflicting_coordinates():
+    first = _maps_gene_contribution(
+        start="100", end="200", status="REVIEWED", bronze_line=0
+    )
+    second = _maps_gene_contribution(
+        start="999", end="888", status="MODEL", bronze_line=1
+    )
+    merged = None
+    for contribution in (first, second):
+        merged = apply_edge_contribution(merged, contribution)
+
+    assert merged["start"] == "100"
+    assert merged["end"] == "200"
+    assert merged["status"] == "REVIEWED"
+    assert len(merged["sources"]) == 2
+    assert "999" not in merged.values()
+    assert "888" not in merged.values()
+
+
+def test_edge_payload_conflicts_on_disagreement():
+    first = _maps_gene_contribution(
+        start="100", end="200", status="REVIEWED", bronze_line=0
+    )
+    second = _maps_gene_contribution(
+        start="999", end="888", status="MODEL", bronze_line=1
+    )
+    merged = apply_edge_contribution(None, first)
+    conflicts = edge_payload_conflicts(
+        merged,
+        second[1],
+        source_name=second[0],
+        source_meta=second[2],
+    )
+    slots = {c["slot"] for c in conflicts}
+    assert slots == {"start", "end", "status"}
+    assert all(c["bronze_line"] == 1 for c in conflicts)
+
+
+def test_edge_payload_conflicts_identical_is_quiet():
+    first = _maps_gene_contribution(
+        start="100", end="200", status="REVIEWED", bronze_line=0
+    )
+    second = _maps_gene_contribution(
+        start="100", end="200", status="REVIEWED", bronze_line=1
+    )
+    merged = apply_edge_contribution(None, first)
+    assert (
+        edge_payload_conflicts(
+            merged,
+            second[1],
+            source_name=second[0],
+            source_meta=second[2],
+        )
+        == []
+    )

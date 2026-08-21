@@ -42,6 +42,8 @@ def run(
         "merged_nodes": summary.node_count,
         "merged_edges": summary.edge_count,
         "quarantined": summary.quarantine_count,
+        "edge_payload_conflicts": summary.edge_payload_conflicts,
+        "edge_payload_conflict_samples": summary.edge_payload_conflict_samples,
     }
     ctx.paths.merged_resolution_report(run_id).write_text(
         json.dumps(resolution_report, indent=2),
