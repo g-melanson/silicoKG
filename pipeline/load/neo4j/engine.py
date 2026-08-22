@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import logging
 import re
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -10,6 +11,8 @@ from pathlib import Path
 from typing import Any, Iterable, Iterator, TypeVar
 
 from tqdm import tqdm
+
+log = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
@@ -211,6 +214,16 @@ def group_relationships_by_type(rows: list[dict[str, Any]]) -> dict[str, list[di
     return dict(grouped)
 
 
+def group_relationships_by_endpoint_labels(
+    rows: list[dict[str, Any]],
+) -> dict[tuple[str | None, str | None], list[dict[str, Any]]]:
+    grouped: dict[tuple[str | None, str | None], list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        key = (infer_node_label(row["startId"]), infer_node_label(row["endId"]))
+        grouped[key].append(row)
+    return dict(grouped)
+
+
 def chunk_rows(rows: list[dict[str, Any]], batch_size: int) -> Iterator[tuple[dict[str, Any], ...]]:
     if batch_size <= 0:
         raise ValueError("batch_size must be positive")
@@ -238,12 +251,11 @@ def ensure_relationship_endpoint_indexes(
     """Create label-scoped nodeId indexes for relationship MATCH endpoints."""
     labels: set[str] = set(node_files)
     for rows in relationships_by_type.values():
-        if not rows:
-            continue
-        for key in ("startId", "endId"):
-            label = infer_node_label(rows[0][key])
-            if label:
-                labels.add(label)
+        for row in rows:
+            for key in ("startId", "endId"):
+                label = infer_node_label(row[key])
+                if label:
+                    labels.add(label)
     for label in sorted(labels):
         ensure_node_index(session, label)
 
@@ -272,6 +284,45 @@ def load_node_batch(session: Any, label: str, rows: tuple[dict[str, Any], ...]) 
     return len(rows)
 
 
+def _node_match_clause(variable: str, id_field: str, label: str | None) -> str:
+    if label:
+        _validate_label(label)
+        return f"MATCH ({variable}:{label} {{nodeId: row.{id_field}}}) "
+    return f"MATCH ({variable} {{nodeId: row.{id_field}}}) "
+
+
+def _merge_relationship_group(
+    session: Any,
+    rel_type: str,
+    start_label: str | None,
+    end_label: str | None,
+    rows: list[dict[str, Any]],
+) -> int:
+    query = (
+        f"UNWIND $rows AS row "
+        f"{_node_match_clause('start', 'startId', start_label)}"
+        f"{_node_match_clause('end', 'endId', end_label)}"
+        f"MERGE (start)-[rel:{rel_type}]->(end) "
+        f"SET rel += row.properties "
+        f"RETURN count(*) AS written"
+    )
+    record = session.run(query, rows=rows).single()
+    written = int(record["written"]) if record else 0
+    skipped = len(rows) - written
+    if skipped:
+        log.warning(
+            "skipped %s %s relationship(s); MATCH wrote %s of %s rows "
+            "(start_label=%s end_label=%s)",
+            skipped,
+            rel_type,
+            written,
+            len(rows),
+            start_label,
+            end_label,
+        )
+    return written
+
+
 def load_relationship_batch(
     session: Any,
     rel_type: str,
@@ -281,27 +332,16 @@ def load_relationship_batch(
         return 0
 
     rel_type = _validate_relationship_type(rel_type)
-    start_label = infer_node_label(rows[0]["startId"])
-    end_label = infer_node_label(rows[0]["endId"])
-    start_match = (
-        f"MATCH (start:{start_label} {{nodeId: row.startId}}) "
-        if start_label
-        else "MATCH (start {nodeId: row.startId}) "
-    )
-    end_match = (
-        f"MATCH (end:{end_label} {{nodeId: row.endId}}) "
-        if end_label
-        else "MATCH (end {nodeId: row.endId}) "
-    )
-    query = (
-        f"UNWIND $rows AS row "
-        f"{start_match}"
-        f"{end_match}"
-        f"MERGE (start)-[rel:{rel_type}]->(end) "
-        f"SET rel += row.properties"
-    )
-    session.run(query, rows=list(rows)).consume()
-    return len(rows)
+    written = 0
+    grouped = group_relationships_by_endpoint_labels(list(rows))
+    for (start_label, end_label), group_rows in sorted(
+        grouped.items(),
+        key=lambda item: (item[0][0] or "", item[0][1] or ""),
+    ):
+        written += _merge_relationship_group(
+            session, rel_type, start_label, end_label, group_rows
+        )
+    return written
 
 
 def _load_batches_with_progress(
@@ -390,16 +430,24 @@ def load_csv_files(
             )
 
         for rel_type, rows in sorted(relationships_by_type.items()):
-            loaded = _load_batches_with_progress(
-                session,
-                rows=rows,
-                batch_size=batch_size,
-                desc=f"Loading {rel_type}",
-                show_progress=show_progress,
-                load_batch=lambda session, batch, rel_type=rel_type: load_relationship_batch(
-                    session, rel_type, batch
-                ),
-            )
+            loaded = 0
+            for (start_label, end_label), labeled_rows in sorted(
+                group_relationships_by_endpoint_labels(rows).items(),
+                key=lambda item: (item[0][0] or "", item[0][1] or ""),
+            ):
+                endpoint_desc = (
+                    f"{start_label or '*'}->{end_label or '*'}"
+                )
+                loaded += _load_batches_with_progress(
+                    session,
+                    rows=labeled_rows,
+                    batch_size=batch_size,
+                    desc=f"Loading {rel_type} ({endpoint_desc})",
+                    show_progress=show_progress,
+                    load_batch=lambda session, batch, rel_type=rel_type: (
+                        load_relationship_batch(session, rel_type, batch)
+                    ),
+                )
             summary.relationship_count += loaded
             summary.relationship_count_by_type[rel_type] = loaded
 
