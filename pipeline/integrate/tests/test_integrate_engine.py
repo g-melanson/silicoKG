@@ -150,3 +150,103 @@ def test_integrate_quarantines_edge_with_missing_object(tmp_path):
     assert nodes == []
     assert edges == []
     assert quarantine[0]["errors"] == ["edge missing object"]
+
+
+def _maps_gene_fragment(
+    *,
+    subject: str,
+    start: str,
+    end: str,
+    bronze_line: int,
+    status: str = "REVIEWED",
+) -> dict:
+    gene_id = "1"
+    accession = subject.rsplit(":", 1)[-1]
+    return build_fragment_envelope(
+        target_class="GenomicSequenceMapsGene",
+        obj={
+            "id": f"silkg:GenomicSequenceMapsGene:9606:{accession}:{gene_id}",
+            "@type": "GenomicSequenceMapsGene",
+            "subject": subject,
+            "predicate": "silkg:MAPS_TO",
+            "object": "silkg:Gene:9606:1",
+            "start": start,
+            "end": end,
+            "status": status,
+        },
+        source_name="ncbi-gene2refseq",
+        silver_run_id="test-run",
+        bronze_line=bronze_line,
+        bronze_record={"gene_id": gene_id, "tax_id": "9606"},
+    )
+
+
+def test_integrate_different_subject_yields_two_edges(tmp_path):
+    fragments = [
+        _maps_gene_fragment(
+            subject="silkg:GenomicSequence:9606:NC_000019.10",
+            start="100",
+            end="200",
+            bronze_line=0,
+        ),
+        _maps_gene_fragment(
+            subject="silkg:GenomicSequence:9606:NC_060943.1",
+            start="100",
+            end="200",
+            bronze_line=1,
+        ),
+    ]
+    silver = tmp_path / "fragments.jsonl"
+    silver.write_text(
+        "".join(json.dumps(f) + "\n" for f in fragments), encoding="utf-8"
+    )
+
+    nodes, edges, quarantine, summary = integrate_silver_paths(
+        [silver], load_priorities(REPO / "schemas" / "integrate-priorities.yaml")
+    )
+    assert summary.quarantine_count == 0
+    assert nodes == []
+    assert len(edges) == 2
+    subjects = {edge["subject"] for edge in edges}
+    assert subjects == {
+        "silkg:GenomicSequence:9606:NC_000019.10",
+        "silkg:GenomicSequence:9606:NC_060943.1",
+    }
+    assert summary.edge_payload_conflicts == 0
+
+
+def test_integrate_counts_edge_payload_conflicts(tmp_path):
+    fragments = [
+        _maps_gene_fragment(
+            subject="silkg:GenomicSequence:9606:NC_000019.10",
+            start="100",
+            end="200",
+            bronze_line=0,
+            status="REVIEWED",
+        ),
+        _maps_gene_fragment(
+            subject="silkg:GenomicSequence:9606:NC_000019.10",
+            start="999",
+            end="888",
+            bronze_line=1,
+            status="MODEL",
+        ),
+    ]
+    silver = tmp_path / "fragments.jsonl"
+    silver.write_text(
+        "".join(json.dumps(f) + "\n" for f in fragments), encoding="utf-8"
+    )
+
+    nodes, edges, quarantine, summary = integrate_silver_paths(
+        [silver], load_priorities(REPO / "schemas" / "integrate-priorities.yaml")
+    )
+    assert summary.quarantine_count == 0
+    assert len(edges) == 1
+    assert edges[0]["start"] == "100"
+    assert edges[0]["end"] == "200"
+    assert edges[0]["status"] == "REVIEWED"
+    assert len(edges[0]["sources"]) == 2
+    assert summary.edge_payload_conflicts == 3
+    sample_slots = {s["slot"] for s in summary.edge_payload_conflict_samples}
+    assert sample_slots == {"start", "end", "status"}
+    assert edges[0].get("alternates") is None

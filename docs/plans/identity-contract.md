@@ -272,6 +272,12 @@ universe/{run_id}/4-merged/manifest.json
 
 **Dedup key:** `( @type, subject, predicate, object )` — edge `id` is not used for dedup.
 
+**Payload:** First contribution in stream order owns every non-key slot (`start`, `end`, `map_location`, `id`, …). Later fragments append `{source_name, silver_run_id, bronze_line}` to `sources[]` only. Source rank (`§5.4`) is not consulted. Edges do not grow `alternates[]`.
+
+Disagreements on non-empty payload slots are counted in `resolution_report.json` (`edge_payload_conflicts`, bounded `edge_payload_conflict_samples`). They do not quarantine the run. See [edge-merge-policy.md](./edge-merge-policy.md).
+
+A different `subject` or `object` is a different edge, not a payload conflict.
+
 Classify as edges: `ChromosomeHasGene`, `GeneHasDbXref`, `GeneHasTranscript`, `ProteinSameAs`, `GeneAdjacentToGene`, and other reified triple classes.
 
 External CURIEs appearing only as edge objects (e.g. `HGNC:5`) are not merged as nodes in v1.

@@ -16,11 +16,15 @@ from pipeline.integrate.merge import (
     NodeMergeState,
     apply_edge_contribution,
     apply_node_contribution,
+    edge_payload_conflicts,
     finalize_node,
 )
 from pipeline.integrate.priorities import IntegratePriorities
 from pipeline.io.jsonl import loads_line
 from pipeline.progress import iter_file_lines, track
+
+
+EDGE_PAYLOAD_CONFLICT_SAMPLE_CAP = 20
 
 
 @dataclass
@@ -29,6 +33,8 @@ class IntegrateSummary:
     node_count: int = 0
     edge_count: int = 0
     quarantine_count: int = 0
+    edge_payload_conflicts: int = 0
+    edge_payload_conflict_samples: list[dict] = field(default_factory=list)
     sources: list[str] = field(default_factory=list)
 
 
@@ -84,10 +90,23 @@ def integrate_silver_paths(
                     summary.quarantine_count += 1
                     continue
                 key = _edge_key(obj)
-                edge_states[key] = apply_edge_contribution(
-                    edge_states.get(key),
-                    contribution,
-                )
+                existing = edge_states.get(key)
+                if existing is not None:
+                    for conflict in edge_payload_conflicts(
+                        existing,
+                        obj,
+                        source_name=source_name,
+                        source_meta=fragment["source"],
+                    ):
+                        summary.edge_payload_conflicts += 1
+                        if (
+                            len(summary.edge_payload_conflict_samples)
+                            < EDGE_PAYLOAD_CONFLICT_SAMPLE_CAP
+                        ):
+                            summary.edge_payload_conflict_samples.append(
+                                {"key": list(key), **conflict}
+                            )
+                edge_states[key] = apply_edge_contribution(existing, contribution)
                 continue
 
             if not node_id or not node_type:

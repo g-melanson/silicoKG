@@ -1,4 +1,4 @@
-"""Priority-aware node merge for integrate."""
+"""Priority-aware node merge and first-contribution-wins edge fold."""
 
 from __future__ import annotations
 
@@ -10,6 +10,11 @@ from pipeline.identity.fragments import ensure_edge_predicate
 from pipeline.integrate.priorities import IntegratePriorities
 
 Contribution = tuple[str, dict, dict]
+
+# Identity of a typed triple. These cannot disagree inside one merge bucket
+# because they *are* the bucket key (`_edge_key` in engine.py).
+EDGE_IDENTITY_SLOTS = frozenset({"@type", "subject", "predicate", "object"})
+EDGE_PAYLOAD_SKIP_SLOTS = EDGE_IDENTITY_SLOTS | {"sources"}
 
 
 def _is_empty(value) -> bool:
@@ -170,11 +175,52 @@ def merge_node_fragments(
     return finalize_node(state)
 
 
+def edge_payload_conflicts(
+    canonical: dict,
+    incoming: dict,
+    *,
+    source_name: str,
+    source_meta: dict,
+) -> list[dict]:
+    """Return non-empty payload slots that disagree with the kept edge.
+
+    Identity slots and `sources` are ignored. Empty incoming values are not
+    disagreements. Callers count these; they are not written onto the edge.
+    """
+    conflicts: list[dict] = []
+    for slot, value in incoming.items():
+        if slot in EDGE_PAYLOAD_SKIP_SLOTS or _is_empty(value):
+            continue
+        kept = canonical.get(slot)
+        if _is_empty(kept) or kept == value:
+            continue
+        conflicts.append(
+            {
+                "slot": slot,
+                "kept": kept,
+                "dropped": value,
+                "source_name": source_name,
+                "bronze_line": source_meta.get("bronze_line"),
+            }
+        )
+    return conflicts
+
+
 def apply_edge_contribution(
     merged: dict | None,
     contribution: Contribution,
 ) -> dict:
-    """Fold one silver edge fragment into running merge state."""
+    """Fold one silver edge fragment into running merge state.
+
+    Integrate dedups typed triples; it does not reconcile source-specific edge
+    attributes. The first contribution copies the object (via
+    `ensure_edge_predicate`). Later contributions append provenance only.
+
+    `subject` / `object` cannot conflict inside one call: they are part of the
+    edge key. Genomic `start` / `end` (and other non-key slots) are payload and
+    follow first-contribution-wins in stream order, not `IntegratePriorities`.
+    Use `edge_payload_conflicts` to trace dropped payload.
+    """
     if merged is None:
         return merge_edge_fragments([contribution])
 
@@ -190,6 +236,11 @@ def apply_edge_contribution(
 
 
 def merge_edge_fragments(contributions: list[Contribution]) -> dict:
+    """Batch equivalent of folding `apply_edge_contribution`.
+
+    Payload comes from `contributions[0]`; every contribution contributes a
+    `sources[]` row. Later objects are not merged.
+    """
     merged = ensure_edge_predicate(dict(contributions[0][1]))
     merged["sources"] = [
         {
