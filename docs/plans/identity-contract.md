@@ -13,7 +13,7 @@ Normative contract for canonical URI minting, silver fragment shape, and integra
 |-------|----------|
 | Gene canonical URI | `silkg:Gene:{tax_id}:{gene_id}` |
 | External database xrefs | Emit `GeneHasDbXref` edge fragments with predicate `silkg:SAME_AS` |
-| Attribute conflict resolution | Priority table per source (`schemas/integrate-priorities.yaml`), with optional slot-level overrides |
+| Attribute conflict resolution | ~~Priority table per source (`schemas/integrate-priorities.yaml`), with optional slot-level overrides~~ Policy imposed: source integration ranks must be distinct with no ties |
 | Gene synonym handling | Fold into `Gene.synonyms`; do not emit `GeneAliasRecord` nodes |
 | Discontinued GeneIDs | Integrate redirect table — **not** `SAME_AS` edges |
 

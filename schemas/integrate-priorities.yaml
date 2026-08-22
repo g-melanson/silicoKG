@@ -1,10 +1,11 @@
 # Source rank for scalar attribute conflicts during integrate (higher wins).
+# Requirements - no ties between sources.
 sources:
   ncbi-gene-info: 100
   ncbi-gene-summary: 90
   ncbi-gene2refseq: 50
   ncbi-gene-neighbours: 40
-  ncbi-gene-group: 40
+  ncbi-gene-group: 41
   ncbi-gene-history: 30
   ncbi-gene-refseq-to-uniprot: 20
   uniprot-gaf: 15
@@ -23,9 +24,8 @@ slots:
       - ncbi-gene-info
   Protein:
     symbol:
-      - ncbi-gene2refseq
       - uniprot-gaf
-      - corum-human-complexes
+      - ncbi-gene2refseq
     name:
       - uniprot-gaf
-      - corum-human-complexes
+      - ncbi-gene2refseq

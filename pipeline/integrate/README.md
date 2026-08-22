@@ -1,6 +1,7 @@
 # Integrate (silver → merged)
 
 Merge silver fragment envelopes into priority-aware nodes and edges.
+Source-specific ranking for a winning contributor is established in `schemas/integrate-priorities.yaml`
 
 ## CLI
 
