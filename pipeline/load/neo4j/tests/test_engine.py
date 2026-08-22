@@ -7,11 +7,35 @@ import pytest
 
 from pipeline.load.neo4j.engine import (
     discover_node_csvs,
+    group_relationships_by_endpoint_labels,
     group_relationships_by_type,
     infer_node_label,
+    load_relationship_batch,
     parse_node_csv,
     parse_relationships_csv,
 )
+
+
+class _FakeResult:
+    def __init__(self, written: int) -> None:
+        self._written = written
+
+    def single(self):
+        return {"written": self._written}
+
+
+class _FakeSession:
+    def __init__(self, written: int | None = None) -> None:
+        self.queries: list[str] = []
+        self.row_batches: list[list[dict]] = []
+        self._written = written
+
+    def run(self, query: str, **params):
+        self.queries.append(query)
+        rows = list(params.get("rows", []))
+        self.row_batches.append(rows)
+        written = self._written if self._written is not None else len(rows)
+        return _FakeResult(written)
 
 
 def _write_csv(path: Path, rows: list[list[str]]) -> None:
@@ -100,6 +124,82 @@ def test_group_relationships_by_type():
 
     assert set(grouped) == {"HAS_GENE", "SAME_AS"}
     assert len(grouped["HAS_GENE"]) == 2
+
+
+def test_group_relationships_by_endpoint_labels_splits_mixed_starts():
+    rows = [
+        {
+            "type": "ASSOCIATED_WITH",
+            "startId": "silkg:Gene:9606:1",
+            "endId": "silkg:Disease:doid:1",
+            "properties": {},
+        },
+        {
+            "type": "ASSOCIATED_WITH",
+            "startId": "silkg:Protein:9606:P12345",
+            "endId": "silkg:Disease:doid:1",
+            "properties": {},
+        },
+    ]
+
+    grouped = group_relationships_by_endpoint_labels(rows)
+
+    assert set(grouped) == {("Gene", "Disease"), ("Protein", "Disease")}
+    assert grouped[("Gene", "Disease")][0]["startId"] == "silkg:Gene:9606:1"
+    assert grouped[("Protein", "Disease")][0]["startId"] == "silkg:Protein:9606:P12345"
+
+
+def test_load_relationship_batch_splits_mixed_gene_protein_start_labels():
+    rows = (
+        {
+            "startId": "silkg:Gene:9606:1",
+            "endId": "silkg:Disease:doid:1",
+            "type": "ASSOCIATED_WITH",
+            "properties": {},
+        },
+        {
+            "startId": "silkg:Protein:9606:P12345",
+            "endId": "silkg:Disease:doid:1",
+            "type": "ASSOCIATED_WITH",
+            "properties": {},
+        },
+    )
+    session = _FakeSession()
+
+    written = load_relationship_batch(session, "ASSOCIATED_WITH", rows)
+
+    assert written == 2
+    assert len(session.queries) == 2
+    assert "MATCH (start:Gene {nodeId: row.startId})" in session.queries[0]
+    assert "MATCH (end:Disease {nodeId: row.endId})" in session.queries[0]
+    assert "MATCH (start:Protein {nodeId: row.startId})" in session.queries[1]
+    assert session.row_batches[0][0]["startId"] == "silkg:Gene:9606:1"
+    assert session.row_batches[1][0]["startId"] == "silkg:Protein:9606:P12345"
+
+
+def test_load_relationship_batch_returns_written_count_not_input_len(caplog):
+    rows = (
+        {
+            "startId": "silkg:Gene:9606:1",
+            "endId": "silkg:Disease:doid:1",
+            "type": "ASSOCIATED_WITH",
+            "properties": {},
+        },
+        {
+            "startId": "silkg:Gene:9606:2",
+            "endId": "silkg:Disease:doid:1",
+            "type": "ASSOCIATED_WITH",
+            "properties": {},
+        },
+    )
+    session = _FakeSession(written=1)
+
+    with caplog.at_level("WARNING"):
+        written = load_relationship_batch(session, "ASSOCIATED_WITH", rows)
+
+    assert written == 1
+    assert "skipped 1 ASSOCIATED_WITH relationship(s)" in caplog.text
+    assert "MATCH wrote 1 of 2 rows" in caplog.text
 
 
 def test_parse_node_csv_rejects_invalid_label(tmp_path):
