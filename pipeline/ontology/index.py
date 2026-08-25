@@ -45,7 +45,14 @@ def compile_index(
     source_name: str,
     input_hash: str,
 ) -> CompiledIndex:
-    """Fold term and edge rows into the cached index shape."""
+    """Fold bronze term and edge rows into a compiled ontology index.
+
+    Term rows become ``classes`` entries (label + empty parents). Named
+    ``rdfs:subClassOf`` edges append parent CURIEs. All other edges become
+    ``someValuesFrom`` records in ``restrictions_index``. Class keys, parent
+    lists, and restriction lists are sorted so the YAML cache is
+    order-independent of the input rows.
+    """
     index = CompiledIndex(
         version=1,
         source_name=source_name,
@@ -54,10 +61,11 @@ def compile_index(
 
     for row in rows:
         if isinstance(row, OntologyTermRow):
-            index.classes[row.term_id] = {
-                "label": row.label or "",
-                "parents": [],
-            }
+            entry = index.classes.setdefault(
+                row.term_id,
+                {"label": "", "parents": []}
+            )
+            entry["label"] = row.label or ""
             index.stats.class_count += 1
             continue
 
@@ -81,16 +89,27 @@ def compile_index(
         )
         index.stats.restriction_count += 1
 
+    for entry in index.classes.values():
+        entry["parents"] = sorted(entry["parents"])
+        if "synonyms" in entry:
+            entry["synonyms"] = sorted(entry["synonyms"])
+
+    index.classes = dict(sorted(index.classes.items()))
+    index.restrictions_index = {
+        class_id: sorted(restrictions, key=lambda r: (r["property"], r["filler"]))
+        for class_id, restrictions in sorted(index.restrictions_index.items())
+    }
+
     return index
 
 
-def write_index(index: CompiledIndex, path: Path) -> None:
+def write_index(index: CompiledIndex, path: Path, sort_keys: bool = True) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
         yaml.safe_dump(
             index.to_dict(),
             handle,
-            sort_keys=False,
+            sort_keys=sort_keys,
             allow_unicode=True,
         )
 

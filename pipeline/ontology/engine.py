@@ -29,6 +29,20 @@ _OBO_TERM_IRI = re.compile(
     r"^http://purl\.obolibrary\.org/obo/([A-Z][A-Za-z0-9]*)_(.+)$"
 )
 _IS_A_PREDICATE = "rdfs:subClassOf"
+# SO (and other OBO) terms may use hasOBONamespace values outside GO aspects.
+_GO_ASPECT_VALUES = frozenset(
+    {"biological_process", "cellular_component", "molecular_function"}
+)
+
+
+def _optional_go_aspect(value: object | None) -> GOAspects | None:
+    if value is None:
+        return None
+    text = str(value)
+    if text not in _GO_ASPECT_VALUES:
+        return None
+    return GOAspects(text)
+
 
 def iter_ontology_terms(
     graph: Graph,
@@ -64,7 +78,7 @@ def term_taxonomy_rows(graph: Graph, term: URIRef, ctx: OntologyContext) -> Iter
         yield OntologyEdgeRow(
             row_kind=BronzeRowKind.edge,
             subject_id=subject_id,
-            subject_aspect=GOAspects(str(aspect)) if aspect else None,
+            subject_aspect=_optional_go_aspect(aspect),
             predicate_id=_IS_A_PREDICATE,
             object_id=object_id,
         )
@@ -74,9 +88,7 @@ def object_property_rows(graph: Graph, term: URIRef, ctx: OntologyContext) -> It
     """Extract term-to-term edges from owl:Restriction nodes on rdfs:subClassOf."""
     subject_id = iri_to_curie(str(term), ctx)
     subject_aspect_val = graph.value(term, OBOINOWL.hasOBONamespace)
-    subject_aspect = (
-        GOAspects(str(subject_aspect_val)) if subject_aspect_val else None
-    )
+    subject_aspect = _optional_go_aspect(subject_aspect_val)
     for parent in graph.objects(term, RDFS.subClassOf):
         if not isinstance(parent, BNode):
             continue
@@ -95,8 +107,7 @@ def object_property_rows(graph: Graph, term: URIRef, ctx: OntologyContext) -> It
         object_aspect = None
         if str(filler).startswith(ctx.ontology_namespace):
             object_aspect_val = graph.value(filler, OBOINOWL.hasOBONamespace)
-            if object_aspect_val:
-                object_aspect = GOAspects(str(object_aspect_val))
+            object_aspect = _optional_go_aspect(object_aspect_val)
 
         yield OntologyEdgeRow(
             row_kind=BronzeRowKind.edge,
@@ -112,11 +123,11 @@ def class_row(graph: Graph, term: URIRef, ctx: OntologyContext) -> OntologyTermR
     aspect = graph.value(term, OBOINOWL.hasOBONamespace)
     iri = str(term)
     label = str(graph.value(term, RDFS.label) or "")
-    synonyms = [
+    synonyms = sorted(
         str(synonym)
         for syn_prop in SYNONYM_PROPERTIES
         for synonym in graph.objects(term, syn_prop)
-    ]
+    )
 
     return OntologyTermRow(
         row_kind=BronzeRowKind("term"),
@@ -124,7 +135,7 @@ def class_row(graph: Graph, term: URIRef, ctx: OntologyContext) -> OntologyTermR
         iri=iri,
         label=str(label or ""),
         synonyms=synonyms,
-        aspect=GOAspects(str(aspect)) if aspect else None
+        aspect=_optional_go_aspect(aspect),
     )
 
 
