@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Iterable
+from dataclasses import dataclass, field
 
 from pipeline.identity.constants import EDGE_CLASS_TO_PREDICATE
 from pipeline.identity.fragments import ensure_edge_predicate
@@ -53,7 +54,7 @@ def _edge_key(obj: dict) -> tuple[str, str, str, str]:
 def integrate_silver_paths(
     fragment_paths: list[Path],
     priorities: IntegratePriorities,
-) -> tuple[list[dict], list[dict], list[dict], IntegrateSummary]:
+) -> Iterable[dict]:
     node_states: dict[tuple[str, str], NodeMergeState] = {}
     edge_states: dict[tuple[str, str, str, str], dict] = {}
     id_to_type: dict[str, str] = {}
@@ -142,7 +143,7 @@ def integrate_silver_paths(
                 priorities,
             )
 
-    nodes = [
+    nodes = (
         finalize_node(state)
         for _key, state in track(
             sorted(node_states.items(), key=lambda item: item[0]),
@@ -150,8 +151,8 @@ def integrate_silver_paths(
             desc="finalize nodes",
             unit="nodes",
         )
-    ]
-    edges = [
+    )
+    edges = (
         edge
         for _key, edge in track(
             sorted(edge_states.items(), key=lambda item: item[0]),
@@ -159,8 +160,8 @@ def integrate_silver_paths(
             desc="finalize edges",
             unit="edges",
         )
-    ]
+    )
 
-    summary.node_count = len(nodes)
-    summary.edge_count = len(edges)
+    summary.node_count = len(node_states)
+    summary.edge_count = len(edge_states)
     return nodes, edges, quarantine, summary
