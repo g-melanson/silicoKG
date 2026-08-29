@@ -2,13 +2,67 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from pipeline.io.jsonl import JsonlWriter
 from pipeline.paths import DEFAULT_PATHS, REPO_ROOT, UniversePaths
 from pipeline.publish.config import PublishConfig
 from pipeline.publish.context import PublishContext
-from pipeline.publish.engine import publish_merged_paths
+from pipeline.publish.engine import (
+    PublishOutcome,
+    PublishSummary,
+    publish_merged_paths,
+)
 
 PROJECTION_VERSION = "1"
 DEFAULT_SCHEMA_PATH = REPO_ROOT / "schemas/domain/gene-or-gene-product.yaml"
+
+
+def _quarantine_line(outcome: PublishOutcome) -> dict:
+    return {
+        "line_number": outcome.line_number,
+        "record": outcome.record,
+        "errors": outcome.errors,
+    }
+
+
+def _write_publish_stream(
+    ctx: PublishContext,
+    *,
+    nodes_path: Path,
+    edges_path: Path,
+    exclude_edge_types: frozenset[str],
+) -> PublishSummary:
+    summary = PublishSummary()
+    run_id = ctx.run_id
+    with (
+        JsonlWriter(ctx.paths.gold_nodes(run_id)) as nodes_out,
+        JsonlWriter(ctx.paths.gold_edges(run_id)) as edges_out,
+        JsonlWriter(ctx.paths.gold_quarantine_nodes(run_id)) as q_nodes_out,
+        JsonlWriter(ctx.paths.gold_quarantine_edges(run_id)) as q_edges_out,
+    ):
+        for outcome in publish_merged_paths(
+            nodes_path,
+            edges_path,
+            schema_path=ctx.schema_path,
+            strip_slots=ctx.strip_slots,
+            exclude_edge_types=exclude_edge_types,
+        ):
+            if isinstance(outcome, PublishSummary):
+                summary = outcome
+                continue
+            if outcome.kind == "node":
+                if outcome.accepted:
+                    nodes_out.write(outcome.record)
+                else:
+                    q_nodes_out.write(_quarantine_line(outcome))
+                continue
+            if (
+                outcome.accepted
+                and outcome.record.get("@type") not in exclude_edge_types
+            ):
+                edges_out.write(outcome.record)
+            else:
+                q_edges_out.write(_quarantine_line(outcome))
+    return summary
 
 
 def run(
@@ -39,29 +93,12 @@ def run(
     ctx.paths.gold_quarantine_dir(run_id).mkdir(parents=True, exist_ok=True)
     started_at = datetime.now(timezone.utc)
 
-    nodes, edges, quarantine_nodes, quarantine_edges, summary = publish_merged_paths(
-        nodes_path,
-        edges_path,
-        schema_path=ctx.schema_path,
-        strip_slots=ctx.strip_slots,
+    summary = _write_publish_stream(
+        ctx,
+        nodes_path=nodes_path,
+        edges_path=edges_path,
         exclude_edge_types=publish_config.exclude_edge_types,
     )
-
-    with ctx.paths.gold_nodes(run_id).open("w", encoding="utf-8") as node_file:
-        for node in nodes:
-            node_file.write(json.dumps(node) + "\n")
-
-    with ctx.paths.gold_edges(run_id).open("w", encoding="utf-8") as edge_file:
-        for edge in edges:
-            edge_file.write(json.dumps(edge) + "\n")
-
-    with ctx.paths.gold_quarantine_nodes(run_id).open("w", encoding="utf-8") as q_file:
-        for item in quarantine_nodes:
-            q_file.write(json.dumps(item) + "\n")
-
-    with ctx.paths.gold_quarantine_edges(run_id).open("w", encoding="utf-8") as q_file:
-        for item in quarantine_edges:
-            q_file.write(json.dumps(item) + "\n")
 
     finished_at = datetime.now(timezone.utc)
     ctx.paths.gold_manifest(run_id).write_text(
