@@ -101,3 +101,14 @@ def test_run_excludes_configured_edge_types(tmp_path):
     ]
     assert len(gold_edges) == 1
     assert gold_edges[0]["@type"] == "ChromosomeHasGene"
+
+    quarantine_edges = [
+        json.loads(line)
+        for line in (gold_dir / "quarantine" / "edges.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+        if line.strip()
+    ]
+    assert len(quarantine_edges) == 1
+    assert quarantine_edges[0]["record"]["@type"] == "GeneHasDbXref"
+    assert manifest["drift"]["quarantine_edge_count"] == 0
