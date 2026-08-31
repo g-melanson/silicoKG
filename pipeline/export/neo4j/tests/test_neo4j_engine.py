@@ -7,12 +7,44 @@ from pathlib import Path
 from pipeline.export.neo4j.config import Neo4jExportConfig
 from pipeline.export.neo4j.engine import export_neo4j_csv
 
-
 def _write_jsonl(path: Path, records: list[dict]) -> None:
     path.write_text(
         "".join(json.dumps(record) + "\n" for record in records),
         encoding="utf-8",
     )
+
+
+def test_export_neo4j_csv_flattens_multiline_property_values(tmp_path):
+    nodes = [
+        {
+            "id": "CORUM:1",
+            "@type": "ProteinComplex",
+            "class_labels": ["silkg:CORUM"],
+            "description": "Line one\nLine two",
+            "name": "Example complex",
+        }
+    ]
+    nodes_path = tmp_path / "nodes.jsonl"
+    edges_path = tmp_path / "edges.jsonl"
+    _write_jsonl(nodes_path, nodes)
+    _write_jsonl(edges_path, [])
+
+    nodes_csv_dir = tmp_path / "nodes"
+    relationships_csv = tmp_path / "relationships.csv"
+    summary = export_neo4j_csv(
+        nodes_path,
+        edges_path,
+        nodes_csv_dir=nodes_csv_dir,
+        relationships_csv_path=relationships_csv,
+        config=Neo4jExportConfig(),
+    )
+
+    with (nodes_csv_dir / summary.node_files["ProteinComplex:CORUM"].name).open(
+        encoding="utf-8"
+    ) as handle:
+        rows = list(csv.reader(handle))
+
+    assert rows[1][2] == "Line one Line two"
 
 
 def test_export_neo4j_csv_writes_nodes_and_relationships(tmp_path):
@@ -172,3 +204,33 @@ def test_export_neo4j_csv_can_block_dbxref_stubs_and_edges(tmp_path):
         rel_rows = list(csv.reader(handle))
     assert len(rel_rows) == 2
     assert rel_rows[1][2] == "HAS_GENE"
+
+
+def test_export_neo4j_csv_clears_nodes_csv_dir(tmp_path):
+
+    nodes_csv_dir = tmp_path / "nodes"
+    relationships_csv = tmp_path / "relationships.csv"
+    
+    nodes_path = Path("pipeline/export/neo4j/tests/fixtures/nodes_valid.jsonl")
+    edges_path = Path("pipeline/export/neo4j/tests/fixtures/edges_valid.jsonl")
+
+    summary = export_neo4j_csv(
+        nodes_path,
+        edges_path,
+        nodes_csv_dir=nodes_csv_dir,
+        relationships_csv_path=relationships_csv,
+        config=Neo4jExportConfig(),
+    )
+
+    canary_file = nodes_csv_dir / "run_1_marker.csv"
+    canary_file.touch()
+
+    summary = export_neo4j_csv(
+        nodes_path,
+        edges_path,
+        nodes_csv_dir=nodes_csv_dir,
+        relationships_csv_path=relationships_csv,
+        config=Neo4jExportConfig(),
+    )
+
+    assert not canary_file.exists()
