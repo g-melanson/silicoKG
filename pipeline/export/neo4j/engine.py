@@ -71,8 +71,11 @@ def _format_cell(value: Any) -> str:
     if value is None:
         return ""
     if isinstance(value, list):
-        return ARRAY_DELIMITER.join(str(item) for item in value)
-    return str(value)
+        text = ARRAY_DELIMITER.join(str(item) for item in value)
+    else:
+        text = str(value)
+    # neo4j-admin bulk import rejects multiline fields by default.
+    return text.replace("\r\n", " ").replace("\n", " ").replace("\r", " ")
 
 
 def _collect_node_ids(nodes_path: Path) -> set[str]:
@@ -221,6 +224,11 @@ def _write_node_type_csv(
         property_keys=tuple(keys),
     )
 
+def _prepare_nodes_csv_dir(nodes_csv_dir:Path) -> None:
+    nodes_csv_dir.mkdir(parents=True, exist_ok=True)
+    for path in nodes_csv_dir.glob("*.csv"):
+        path.unlink()
+
 
 def export_neo4j_csv(
     nodes_path: Path,
@@ -230,7 +238,10 @@ def export_neo4j_csv(
     relationships_csv_path: Path,
     config: Neo4jExportConfig | None = None,
 ) -> Neo4jExportSummary:
+
     config = config or Neo4jExportConfig()
+    _prepare_nodes_csv_dir(nodes_csv_dir)
+
     label_map = config.resolved_label_map()
     node_ids = _collect_node_ids(nodes_path)
     external_ids = sorted(_collect_external_endpoints(edges_path, node_ids, config))

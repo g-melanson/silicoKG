@@ -1,0 +1,3 @@
+{"id": "silkg:Gene:9606:1", "@type": "Gene", "name": "Gene 1", "description": "Gene 1 description", "tax_id": "NCBITaxon:9606", "class_labels": ["Test label 1"]}
+{"id": "silkg:Protein:9606:2", "@type": "Protein", "name": "Protein 2", "description": "Protein 2 description", "tax_id": "NCBITaxon:9606", "class_labels": ["Test label 2"]}
+{"id": "silkg:ProteinComplex:9606:3", "@type": "ProteinComplex", "name": "Protein Complex 3", "summary": "Protein Complex 3 description", "tax_id": "NCBITaxon:9606", "class_labels": ["Test label 3"]}
