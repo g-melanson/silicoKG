@@ -29,6 +29,14 @@ ARRAY_PROPERTY_KEYS = frozenset(
 )
 ARRAY_DELIMITER = ";"
 
+PartitionKey = tuple[str, tuple[str, ...]]
+
+
+@dataclass
+class _NodePartitionMeta:
+    property_keys: set[str] = field(default_factory=set)
+    count: int = 0
+
 
 @dataclass(frozen=True)
 class NodeTypeExport:
@@ -110,6 +118,13 @@ def _collect_external_endpoints(
     return external
 
 
+def _node_partition_key(
+    node: dict[str, Any],
+    label_map: SoLabelMap
+) -> tuple[str, tuple[str, ...]]:
+    return node["@type"], resolve_additional_labels(node, label_map)
+
+
 def resolve_additional_labels(node: dict[str, Any], label_map: SoLabelMap) -> tuple[str, ...]:
     return label_map.resolve_additional_labels(node)
 
@@ -126,20 +141,20 @@ def node_csv_filename(base_type: str, additional: tuple[str, ...]) -> str:
     return f"{base_type}__{'__'.join(additional)}.csv"
 
 
-def _group_nodes_by_type(nodes_path: Path) -> dict[str, list[dict[str, Any]]]:
-    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for node in _iter_jsonl(nodes_path, desc="export nodes"):
-        grouped[node["@type"]].append(node)
-    return grouped
-
-
-def _partition_nodes_by_labels(
-    nodes: list[dict[str, Any]],
+def _scan_node_partitions(
+    nodes_path: Path,
     label_map: SoLabelMap,
-) -> dict[tuple[str, ...], list[dict[str, Any]]]:
-    partitions: dict[tuple[str, ...], list[dict[str, Any]]] = defaultdict(list)
-    for node in nodes:
-        partitions[resolve_additional_labels(node, label_map)].append(node)
+    config: Neo4jExportConfig,
+) -> dict[PartitionKey, _NodePartitionMeta]:
+    partitions: dict[PartitionKey, _NodePartitionMeta] = defaultdict(_NodePartitionMeta)
+    reserved = RESERVED_NODE_KEYS | config.exclude_node_properties
+
+    for node in _iter_jsonl(nodes_path, desc="scan node schemas"):
+        key = _node_partition_key(node, label_map)
+        meta = partitions[key]
+        meta.count += 1
+        meta.property_keys.update(omit_keys(node, reserved))
+
     return partitions
 
 
@@ -151,6 +166,62 @@ def _property_keys_for_nodes(
     for node in nodes:
         keys.update(omit_keys(node, RESERVED_NODE_KEYS | config.exclude_node_properties))
     return sorted(keys)
+
+
+def _stream_node_csvs(
+    nodes_path: Path,
+    *,
+    nodes_csv_dir: Path,
+    label_map: SoLabelMap,
+    config: Neo4jExportConfig,
+    partitions: dict[PartitionKey, _NodePartitionMeta],
+) -> tuple[list[NodeTypeExport], int]:
+    property_keys_by_partition: dict[PartitionKey, list[str]] = {
+        key: sorted(meta.property_keys) for key, meta in partitions.items()
+    }
+
+    writers: dict[PartitionKey, csv.writer] = {}
+    open_files: list[Any] = []
+    try:
+        for key in sorted(partitions):
+            base_type, additional = key
+            path = nodes_csv_dir / node_csv_filename(base_type, additional)
+            handle = path.open("w", encoding="utf-8", newline="")
+            open_files.append(handle)
+            writer = csv.writer(handle)
+            writers[key] = writer
+            writer.writerow(_node_header(property_keys_by_partition[key]))
+
+        for node in _iter_jsonl(nodes_path, desc="export nodes"):
+            key = _node_partition_key(node, label_map)
+            writers[key].writerow(
+                _node_row(
+                    node["id"],
+                    _node_properties(node, config),
+                    property_keys_by_partition[key],
+                )
+            )
+    finally:
+        for handle in open_files:
+            handle.close()
+
+    node_types: list[NodeTypeExport] = []
+    node_count = 0
+    for key in sorted(partitions):
+        base_type, additional = key
+        meta = partitions[key]
+        keys = property_keys_by_partition[key]
+        node_types.append(
+            NodeTypeExport(
+                label=node_export_label(base_type, additional),
+                path=nodes_csv_dir / node_csv_filename(base_type, additional),
+                count=meta.count,
+                property_keys=tuple(keys),
+            )
+        )
+        node_count += meta.count
+
+    return node_types, node_count
 
 
 def _relationship_property_keys(edges_path: Path, config: Neo4jExportConfig) -> list[str]:
@@ -247,21 +318,14 @@ def export_neo4j_csv(
     external_ids = sorted(_collect_external_endpoints(edges_path, node_ids, config))
     relationship_property_keys = _relationship_property_keys(edges_path, config)
 
-    node_types: list[NodeTypeExport] = []
-    node_count = 0
-    for base_label, nodes in sorted(_group_nodes_by_type(nodes_path).items()):
-        partitions = _partition_nodes_by_labels(nodes, label_map)
-        for additional, partition_nodes in sorted(partitions.items()):
-            export_label = node_export_label(base_label, additional)
-            filename = node_csv_filename(base_label, additional)
-            export = _write_node_type_csv(
-                label=export_label,
-                nodes=partition_nodes,
-                output_path=nodes_csv_dir / filename,
-                config=config,
-            )
-            node_types.append(export)
-            node_count += export.count
+    partitions = _scan_node_partitions(nodes_path, label_map, config)
+    node_types, node_count = _stream_node_csvs(
+        nodes_path,
+        nodes_csv_dir=nodes_csv_dir,
+        label_map=label_map,
+        config=config,
+        partitions=partitions,
+    )
 
     if external_ids:
         stub_label = next(iter(config.stub_labels))
