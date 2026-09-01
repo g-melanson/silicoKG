@@ -210,18 +210,11 @@ def test_export_neo4j_csv_clears_nodes_csv_dir(tmp_path):
 
     nodes_csv_dir = tmp_path / "nodes"
     relationships_csv = tmp_path / "relationships.csv"
-    
+
     nodes_path = Path("pipeline/export/neo4j/tests/fixtures/nodes_valid.jsonl")
     edges_path = Path("pipeline/export/neo4j/tests/fixtures/edges_valid.jsonl")
 
-    summary = export_neo4j_csv(
-        nodes_path,
-        edges_path,
-        nodes_csv_dir=nodes_csv_dir,
-        relationships_csv_path=relationships_csv,
-        config=Neo4jExportConfig(),
-    )
-
+    nodes_csv_dir.mkdir(parents=True)
     canary_file = nodes_csv_dir / "run_1_marker.csv"
     canary_file.touch()
 
