@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import json
 import logging
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Hashable, Iterator
+from typing import Any, Callable, Hashable, Iterator
 
+from pipeline.io.jsonl import loads_line
 from pipeline.ontology.classify.rules import (
     AnnotateAction,
     AnnotateMapAction,
@@ -33,6 +33,15 @@ class ClassifyError(ValueError):
 
 
 @dataclass
+class ClassifyGraph:
+    """Working set. Nodes stay listed (rewrite order). Edges exist only by @type."""
+
+    nodes: list[dict[str, Any]]
+    nodes_by_id: dict[str, dict[str, Any]]
+    edges_by_class: dict[str, list[dict[str, Any]]]
+
+
+@dataclass
 class ClassifySummary:
     annotated_node_count: int = 0
     quarantined_stub_count: int = 0
@@ -46,8 +55,18 @@ class ClassifySummary:
     rules_path: str = ""
 
 
+@dataclass(frozen=True)
+class ActionContext:
+    """Everything an action handler may read beyond the target node."""
+
+    index: CompiledIndex
+    summary: ClassifySummary
+    nodes_by_id: dict[str, dict[str, Any]]
+    edge: dict[str, Any] | None = None
+
+
 def _iter_jsonl(path: Path, *, desc: str) -> Iterator[dict[str, Any]]:
-    for _line_number, record in iter_indexed_jsonl(path, desc=desc, loads=json.loads):
+    for _line_number, record in iter_indexed_jsonl(path, desc=desc, loads=loads_line):
         yield record
 
 
@@ -62,21 +81,21 @@ def _dedup_key(item: Any) -> Hashable:
 def append_slot_value(node: dict[str, Any], slot: str, value: Any) -> bool:
     """Append ``value`` to a multivalued slot, deduping while preserving order.
 
-    Returns True when the slot changed.
+    Returns True when the slot changed. A duplicate leaves the node untouched,
+    so re-running classify does not rewrite (or re-list) already-annotated slots.
     """
     existing = node.get(slot)
     if existing is None:
         items: list[Any] = []
     elif isinstance(existing, list):
-        items = list(existing)
+        items = existing
     else:
         items = [existing]
 
-    seen = {_dedup_key(item) for item in items}
     key = _dedup_key(value)
-    if key in seen:
-        node[slot] = items
+    if any(_dedup_key(item) == key for item in items):
         return False
+
     items.append(value)
     node[slot] = items
     return True
@@ -131,39 +150,87 @@ def _record_unmapped(summary: ClassifySummary, value: str) -> None:
             summary.unmapped_slot_values.append(value)
 
 
-def _match_node_targets(
-    rule: ClassificationRule,
-    nodes: list[dict[str, Any]],
-) -> list[str]:
-    when = rule.when
-    if not isinstance(when, NodeMatchWhen):
-        return []
-
-    targets: list[str] = []
-    for node in nodes:
-        node_id = node.get("id")
-        if not isinstance(node_id, str) or not node_id:
-            continue
-        if when.type_name is not None and node.get("@type") != when.type_name:
-            continue
-        if when.slot is not None and node.get(when.slot) != when.equals:
-            continue
-        targets.append(node_id)
-    return targets
-
-
-def _iter_edge_matches(
-    rule: ClassificationRule,
-    edges_by_class: dict[str, list[dict[str, Any]]],
-) -> Iterator[tuple[str, dict[str, Any]]]:
-    """Yield (target_id, edge) for each edge matching ``when.edge``."""
-    when = rule.when
-    if not isinstance(when, EdgeMatchWhen):
+def _record_missing_filler(
+    summary: ClassifySummary, from_class: str, property_id: str, filler: str
+) -> None:
+    warning = f"{filler} filler for {from_class} via {property_id} not in index.classes"
+    if warning in summary.missing_filler_warnings:
         return
-    for edge in edges_by_class.get(when.edge_class, []):
-        endpoint = edge.get(when.role)
-        if isinstance(endpoint, str) and endpoint:
-            yield endpoint, edge
+    summary.missing_filler_warnings.append(warning)
+    log.warning(warning)
+
+
+def _quarantine_missing(
+    target_id: str,
+    target_entity: str | None,
+    rule_id: str,
+    quarantine: list[dict[str, Any]],
+    quarantined_ids: set[str],
+    summary: ClassifySummary,
+) -> None:
+    if target_id in quarantined_ids:
+        return
+    if target_entity is None:
+        raise ClassifyError(
+            f"rule {rule_id} matched missing endpoint {target_id} but declares no "
+            "target_entity; cannot type the quarantine stub"
+        )
+
+    quarantine.append({"id": target_id, "@type": target_entity})
+    quarantined_ids.add(target_id)
+    summary.quarantined_missing_endpoints.append(
+        {"id": target_id, "@type": target_entity, "rule_id": rule_id}
+    )
+    log.warning(
+        "classify missing endpoint %s for rule %s; quarantined stub",
+        target_id,
+        rule_id,
+    )
+
+
+def _iter_matches(
+    rule: ClassificationRule,
+    graph: ClassifyGraph,
+    quarantine: list[dict[str, Any]],
+    quarantined_ids: set[str],
+    summary: ClassifySummary,
+) -> Iterator[tuple[dict[str, Any], dict[str, Any] | None]]:
+    """Yield (target node, edge) for each node this rule should annotate."""
+    target_entity = _annotate_target_entity(rule)
+    when = rule.when
+
+    if isinstance(when, NodeMatchWhen):
+        for node in graph.nodes:
+            node_id = node.get("id")
+            if not isinstance(node_id, str) or not node_id:
+                continue
+            if when.type_name is not None and node.get("@type") != when.type_name:
+                continue
+            if when.slot is not None and node.get(when.slot) != when.equals:
+                continue
+            if target_entity is not None and node.get("@type") != target_entity:
+                continue
+            yield node, None
+        return
+
+    if not isinstance(when, EdgeMatchWhen):
+        raise ClassifyError(f"rule {rule.id} has an unsupported match clause")
+
+    for edge in graph.edges_by_class.get(when.edge_class, []):
+        target_id = edge.get(when.role)
+        if not isinstance(target_id, str) or not target_id:
+            continue
+
+        node = graph.nodes_by_id.get(target_id)
+        if node is None:
+            _quarantine_missing(
+                target_id, target_entity, rule.id, quarantine, quarantined_ids, summary
+            )
+            continue
+
+        if target_entity is not None and node.get("@type") != target_entity:
+            continue
+        yield node, edge
 
 
 def _source_value_for_annotate_map(
@@ -192,71 +259,113 @@ def _source_value_for_annotate_map(
     return source_node.get(action.from_slot)
 
 
+def _apply_annotate(
+    node: dict[str, Any], action: AnnotateAction, ctx: ActionContext
+) -> bool:
+    return append_slot_value(node, action.slot, action.value)
+
+
+def _apply_annotate_map(
+    node: dict[str, Any], action: AnnotateMapAction, ctx: ActionContext
+) -> bool:
+    raw_value = _source_value_for_annotate_map(
+        action,
+        target_node=node,
+        edge=ctx.edge,
+        nodes_by_id=ctx.nodes_by_id,
+    )
+    if raw_value is None or raw_value == "":
+        return False
+
+    changed = False
+    keys = raw_value if isinstance(raw_value, list) else [raw_value]
+    for key in keys:
+        if key is None or key == "":
+            continue
+        mapped = action.value_map.get(str(key))
+        if mapped is None:
+            _record_unmapped(ctx.summary, str(key))
+            continue
+        if append_slot_value(node, action.slot, mapped):
+            changed = True
+    return changed
+
+
+def _apply_propagate_restrictions(
+    node: dict[str, Any], action: PropagateRestrictionsAction, ctx: ActionContext
+) -> bool:
+    changed = False
+    for restriction in ctx.index.restrictions_index.get(action.from_class, []):
+        property_id = restriction.get("property")
+        filler = restriction.get("filler")
+        if not property_id or not filler:
+            continue
+        slot = action.property_map.get(property_id)
+        if not slot:
+            continue
+        if filler not in ctx.index.classes:
+            _record_missing_filler(ctx.summary, action.from_class, property_id, filler)
+        if append_slot_value(node, slot, filler):
+            changed = True
+    return changed
+
+
+def _apply_emit_edge(
+    node: dict[str, Any], action: EmitEdgeAction, ctx: ActionContext
+) -> bool:
+    """Phase 2 — parsed by the rules loader, not yet emitted by the engine."""
+    return False
+
+
+ACTION_HANDLERS: dict[type, Callable[[dict[str, Any], Any, ActionContext], bool]] = {
+    AnnotateAction: _apply_annotate,
+    AnnotateMapAction: _apply_annotate_map,
+    PropagateRestrictionsAction: _apply_propagate_restrictions,
+    EmitEdgeAction: _apply_emit_edge,
+}
+
+
 def _apply_actions(
     node: dict[str, Any],
     rule: ClassificationRule,
-    index: CompiledIndex,
-    summary: ClassifySummary,
-    *,
-    edge: dict[str, Any] | None = None,
-    nodes_by_id: dict[str, dict[str, Any]] | None = None,
+    ctx: ActionContext,
 ) -> bool:
     changed = False
-    nodes_by_id = nodes_by_id or {}
     for action in rule.actions:
-        if isinstance(action, AnnotateAction):
-            if append_slot_value(node, action.slot, action.value):
-                changed = True
-            continue
-
-        if isinstance(action, AnnotateMapAction):
-            raw_value = _source_value_for_annotate_map(
-                action,
-                target_node=node,
-                edge=edge,
-                nodes_by_id=nodes_by_id,
+        handler = ACTION_HANDLERS.get(type(action))
+        if handler is None:
+            raise ClassifyError(
+                f"rule {rule.id} uses unsupported action {type(action).__name__}"
             )
-            if raw_value is None or raw_value == "":
-                continue
-            keys = raw_value if isinstance(raw_value, list) else [raw_value]
-            for key in keys:
-                if key is None or key == "":
-                    continue
-                mapped = action.value_map.get(str(key))
-                if mapped is None:
-                    _record_unmapped(summary, str(key))
-                    continue
-                if append_slot_value(node, action.slot, mapped):
-                    changed = True
-            continue
-
-        if isinstance(action, PropagateRestrictionsAction):
-            restrictions = index.restrictions_index.get(action.from_class, [])
-            for restriction in restrictions:
-                property_id = restriction.get("property")
-                filler = restriction.get("filler")
-                if not property_id or not filler:
-                    continue
-                slot = action.property_map.get(property_id)
-                if not slot:
-                    continue
-                if filler not in index.classes:
-                    warning = (
-                        f"{filler} filler for {action.from_class} "
-                        f"via {property_id} not in index.classes"
-                    )
-                    if warning not in summary.missing_filler_warnings:
-                        summary.missing_filler_warnings.append(warning)
-                        log.warning(warning)
-                if append_slot_value(node, slot, filler):
-                    changed = True
-            continue
-
-        if isinstance(action, EmitEdgeAction):
-            # Phase 2 — ignored
-            continue
-
+        if handler(node, action, ctx):
+            changed = True
     return changed
+
+
+def _load_graph(nodes_path: Path, edges_path: Path) -> ClassifyGraph:
+    """Load the working set: nodes in file order, edges only as a class index."""
+    nodes = list(_iter_jsonl(nodes_path, desc="classify nodes"))
+    nodes_by_id: dict[str, dict[str, Any]] = {}
+    for node in nodes:
+        node_id = node.get("id")
+        if not isinstance(node_id, str) or not node_id:
+            continue
+        if node_id in nodes_by_id:
+            raise ClassifyError(f"duplicate node id in merged nodes: {node_id}")
+        nodes_by_id[node_id] = node
+
+    # Edges are streamed straight into the index; the full edge list is never held.
+    edges_by_class: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for edge in _iter_jsonl(edges_path, desc="classify edges"):
+        edge_class = edge.get("@type")
+        if isinstance(edge_class, str):
+            edges_by_class[edge_class].append(edge)
+
+    return ClassifyGraph(
+        nodes=nodes,
+        nodes_by_id=nodes_by_id,
+        edges_by_class=edges_by_class,
+    )
 
 
 def classify_merged_paths(
@@ -269,20 +378,12 @@ def classify_merged_paths(
     rules: ClassificationRulesDocument | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], ClassifySummary]:
     """Annotate merged nodes in memory from rules + ontology index."""
+
     compiled = index or load_index(index_path)
     document = rules or load_rules(rules_path)
     _preflight_index_classes(compiled, document)
 
-    nodes = list(_iter_jsonl(nodes_path, desc="classify nodes"))
-    nodes_by_id = {node["id"]: node for node in nodes if "id" in node}
-    edges = list(_iter_jsonl(edges_path, desc="classify edges"))
-
-    edges_by_class: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for edge in edges:
-        edge_class = edge.get("@type")
-        if isinstance(edge_class, str):
-            edges_by_class[edge_class].append(edge)
-
+    graph = _load_graph(nodes_path, edges_path)
     summary = ClassifySummary(
         index_hash=compiled.input_hash,
         index_path=str(index_path),
@@ -293,64 +394,22 @@ def classify_merged_paths(
     quarantined_ids: set[str] = set()
 
     for rule in document.rules:
-        target_entity = _annotate_target_entity(rule)
         match_count = 0
-
-        if isinstance(rule.when, NodeMatchWhen):
-            targets = _match_node_targets(rule, nodes)
-            for target_id in targets:
-                node = nodes_by_id.get(target_id)
-                if node is None:
-                    continue
-                if target_entity is not None and node.get("@type") != target_entity:
-                    continue
-                match_count += 1
-                if _apply_actions(
-                    node, rule, compiled, summary, nodes_by_id=nodes_by_id
-                ):
-                    annotated_ids.add(target_id)
-            summary.rule_match_counts[rule.id] = match_count
-            continue
-
-        for target_id, edge in _iter_edge_matches(rule, edges_by_class):
-            node = nodes_by_id.get(target_id)
-            if node is None:
-                if target_id not in quarantined_ids:
-                    stub_type = target_entity or "Gene"
-                    stub = {"id": target_id, "@type": stub_type}
-                    quarantine_stubs.append(stub)
-                    quarantined_ids.add(target_id)
-                    summary.quarantined_missing_endpoints.append(
-                        {
-                            "id": target_id,
-                            "@type": stub_type,
-                            "rule_id": rule.id,
-                        }
-                    )
-                    log.warning(
-                        "classify missing endpoint %s for rule %s; quarantined stub",
-                        target_id,
-                        rule.id,
-                    )
-                continue
-
-            if target_entity is not None and node.get("@type") != target_entity:
-                continue
-
+        for node, edge in _iter_matches(
+            rule, graph, quarantine_stubs, quarantined_ids, summary
+        ):
             match_count += 1
-            if _apply_actions(
-                node,
-                rule,
-                compiled,
-                summary,
+            ctx = ActionContext(
+                index=compiled,
+                summary=summary,
+                nodes_by_id=graph.nodes_by_id,
                 edge=edge,
-                nodes_by_id=nodes_by_id,
-            ):
-                annotated_ids.add(target_id)
-
+            )
+            if _apply_actions(node, rule, ctx):
+                annotated_ids.add(node["id"])
         summary.rule_match_counts[rule.id] = match_count
 
     summary.annotated_node_count = len(annotated_ids)
     summary.quarantined_stub_count = len(quarantine_stubs)
-    # Preserve original node order; annotate in-place via nodes_by_id aliases.
-    return nodes, quarantine_stubs, summary
+    # Preserve original node order; annotation happened in-place on graph.nodes.
+    return graph.nodes, quarantine_stubs, summary
