@@ -11,6 +11,7 @@ from linkml.validator.report import Severity
 from pipeline.ingest.schema import load_merged_schema
 from pipeline.progress import iter_indexed_jsonl
 
+
 @dataclass
 class ValidationSummary:
     input_record_count: int = 0
@@ -18,12 +19,19 @@ class ValidationSummary:
     rejected_count: int = 0
     error_counts: dict[str, int] = field(default_factory=dict)
 
+
 @dataclass
 class ValidationOutcome:
     line_number: int
     record: dict[str, Any]
     accepted: bool
     errors: list[dict[str, Any]] = field(default_factory=list)
+
+
+@dataclass
+class ValidationResult:
+    summary: ValidationSummary
+    outcomes: list[ValidationOutcome] = field(default_factory=list)
 
 
 def iter_staged_records(path: Path) -> Iterator[dict]:
@@ -85,4 +93,7 @@ def validate_records(
                 errors=[],
             ))
 
-    return summary, outcomes
+    return ValidationResult(
+        summary=summary, 
+        outcomes=outcomes
+    )

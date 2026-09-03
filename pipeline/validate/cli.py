@@ -55,6 +55,7 @@ def main(argv: list[str] | None = None) -> int:
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(levelname)s %(name)s: %(message)s",
     )
+    logging.getLogger("linkml").setLevel(logging.WARNING)
     return run(
         source=args.source,
         source_name=args.source_name,

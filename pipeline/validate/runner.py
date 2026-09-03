@@ -29,7 +29,7 @@ def run(
 
     schema_path = ctx.paths.source_schema_path_for(ctx.source, ctx.source_name)
 
-    validation_summary, validation_outcomes = validate_records(
+    validation_result = validate_records(
         records_path=ctx.paths.staging_records(ctx.source_name, ctx.staging_run_id),
         schema_path=schema_path,
         target_class=ctx.target_class,
@@ -38,11 +38,16 @@ def run(
 
     with ctx.paths.bronze_records(ctx.source_name, ctx.run_id).open("w") as f:
         with ctx.paths.bronze_quarantine(ctx.source_name, ctx.run_id).open("w") as q:
-            for record in validation_outcomes:
+            for record in validation_result.outcomes:
 
-                if record.accepted: f.write(json.dumps(record.record) + "\n")
+                if record.accepted: 
+                    f.write(json.dumps(record.record) + "\n")
 
-                else: q.write(json.dumps(record.record) + "\n")
+                else: 
+                    q.write(json.dumps({
+                        "record": record.record,
+                        "errors": record.errors
+                    }) + "\n")
 
     finished_at = datetime.now(timezone.utc)
 
@@ -59,10 +64,10 @@ def run(
         "source_schema_path": str(schema_path),
         "records_path": str(ctx.paths.bronze_records(ctx.source_name, ctx.run_id)),
         "drift": {
-            "input_record_count": validation_summary.input_record_count,
-            "accepted_count": validation_summary.accepted_count,
-            "rejected_count": validation_summary.rejected_count,
-            "error_counts": validation_summary.error_counts,
+            "input_record_count": validation_result.summary.input_record_count,
+            "accepted_count": validation_result.summary.accepted_count,
+            "rejected_count": validation_result.summary.rejected_count,
+            "error_counts": validation_result.summary.error_counts,
         },
     }
     with ctx.paths.bronze_manifest(ctx.source_name, ctx.run_id).open("w") as f:
