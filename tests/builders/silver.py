@@ -58,13 +58,3 @@ def maps_gene_fragment(
         bronze_line=bronze_line,
         bronze_record=BRONZE_RECORD,
     )
-
-
-def write_silver(
-    tmp_path: Path,
-    fragments: list[dict],
-    name: str = "fragments.jsonl",
-) -> Path:
-    path = tmp_path / name
-    path.write_text("".join(json.dumps(f) + "\n" for f in fragments), encoding="utf-8")
-    return path

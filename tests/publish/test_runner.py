@@ -3,10 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from pipeline.paths import UniversePaths
+from pipeline.paths import REPO_ROOT, UniversePaths
 from pipeline.publish.runner import run
-
-REPO = Path(__file__).resolve().parents[3]
 
 
 def test_run_writes_gold_manifest(tmp_path):
@@ -27,7 +25,7 @@ def test_run_writes_gold_manifest(tmp_path):
     (merged_dir / "nodes.jsonl").write_text(json.dumps(gene) + "\n", encoding="utf-8")
     (merged_dir / "edges.jsonl").write_text("", encoding="utf-8")
 
-    schema_path = REPO / "schemas" / "domain" / "gene-or-gene-product.yaml"
+    schema_path = REPO_ROOT / "schemas" / "domain" / "gene-or-gene-product.yaml"
     exit_code = run(
         run_id=run_id,
         schema_path=schema_path,
@@ -79,7 +77,7 @@ def test_run_excludes_configured_edge_types(tmp_path):
         encoding="utf-8",
     )
 
-    schema_path = REPO / "schemas" / "domain" / "gene-or-gene-product.yaml"
+    schema_path = REPO_ROOT / "schemas" / "domain" / "gene-or-gene-product.yaml"
     from pipeline.publish.config import PublishConfig
 
     exit_code = run(

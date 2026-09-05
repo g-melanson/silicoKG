@@ -3,10 +3,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from pipeline.paths import REPO_ROOT
 from pipeline.publish.engine import PublishSummary, publish_merged_paths
 
-REPO = Path(__file__).resolve().parents[3]
-SCHEMA = REPO / "schemas" / "domain" / "gene-or-gene-product.yaml"
+SCHEMA = REPO_ROOT / "schemas" / "domain" / "gene-or-gene-product.yaml"
 
 
 def _write_jsonl(path: Path, records: list[dict]) -> None:

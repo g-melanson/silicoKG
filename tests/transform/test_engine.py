@@ -1,29 +1,29 @@
 from __future__ import annotations
 
 from pathlib import Path
-
+from pipeline.transform.runner import _concat_parts, _line_ranges, _worker_shard
 from pipeline.io.jsonl import dumps_line
+from pipeline.paths import REPO_ROOT
 from pipeline.transform.engine import (
     TransformSummary,
     parse_ncbi_feature_types,
     transform_stream,
+    transform_bronze_record,
 )
-from pipeline.transform.runner import _concat_parts, _line_ranges, _worker_shard
 
-REPO = Path(__file__).resolve().parents[3]
-BRONZE = REPO / "universe/test-small/2-bronze/ncbi-gene-info/records.jsonl"
-SOURCE_SCHEMA = REPO / "sources/ncbi/ncbi_gene_info/ncbi-gene-info.schema.yaml"
-TRANSFORM = REPO / "sources/ncbi/ncbi_gene_info/ncbi-gene-info.transform.yaml"
-GENE2REFSEQ_BRONZE = REPO / "universe/test-x/2-bronze/ncbi-gene2refseq/records.jsonl"
+BRONZE = REPO_ROOT / "universe/test-small/2-bronze/ncbi-gene-info/records.jsonl"
+SOURCE_SCHEMA = REPO_ROOT / "sources/ncbi/ncbi_gene_info/ncbi-gene-info.schema.yaml"
+TRANSFORM = REPO_ROOT / "sources/ncbi/ncbi_gene_info/ncbi-gene-info.transform.yaml"
+GENE2REFSEQ_BRONZE = REPO_ROOT / "universe/test-x/2-bronze/ncbi-gene2refseq/records.jsonl"
 GENE2REFSEQ_SOURCE_SCHEMA = (
-    REPO / "sources/ncbi/ncbi_gene2refseq/ncbi-gene2refseq.schema.yaml"
+    REPO_ROOT / "sources/ncbi/ncbi_gene2refseq/ncbi-gene2refseq.schema.yaml"
 )
 GENE2REFSEQ_TRANSFORM = (
-    REPO / "sources/ncbi/ncbi_gene2refseq/ncbi-gene2refseq.transform.yaml"
+    REPO_ROOT / "sources/ncbi/ncbi_gene2refseq/ncbi-gene2refseq.transform.yaml"
 )
-GENE_GROUP_SCHEMA = REPO / "sources/ncbi/ncbi_gene_group/ncbi-gene-group.schema.yaml"
+GENE_GROUP_SCHEMA = REPO_ROOT / "sources/ncbi/ncbi_gene_group/ncbi-gene-group.schema.yaml"
 GENE_GROUP_TRANSFORM = (
-    REPO / "sources/ncbi/ncbi_gene_group/ncbi-gene-group.transform.yaml"
+    REPO_ROOT / "sources/ncbi/ncbi_gene_group/ncbi-gene-group.transform.yaml"
 )
 
 
@@ -34,6 +34,32 @@ def _first_bronze_fixture_path(tmp_path: Path, source: Path = BRONZE) -> Path:
     fixture.write_bytes(line)
     return fixture
 
+class _FakeDerivation:
+    populated_from = None
+
+
+class _NoIdTransformer:
+    def map_object(self, record, source_type, target_type, class_derivation):
+        return {}
+
+
+def test_fragment_without_id_is_rejected():
+    outcomes = list(
+        transform_bronze_record(
+            _NoIdTransformer(),
+            record={"gene_id": "1"},
+            line_number=1,
+            source_row_class="FakeRow",
+            class_derivations=[("FakeClass", _FakeDerivation())],
+            source_name="fake-source",
+        )
+    )
+
+    assert len(outcomes) == 1
+    assert outcomes[0].accepted is False
+    assert outcomes[0].errors == ["Missing id"]
+    assert outcomes[0].target_class == "FakeClass"
+    assert outcomes[0].line_number == 1
 
 def test_transform_a1bg_envelope(tmp_path):
     bronze_path = _first_bronze_fixture_path(tmp_path)
