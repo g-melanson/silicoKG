@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from pathlib import Path
-
+from pipeline.paths import REPO_ROOT
 from pipeline.transform.engine import TransformSummary, transform_stream
 from sources.uniprot.gaf.adapter import UniProtGafAdapter
 
-REPO = Path(__file__).resolve().parents[3]
-GAF_FIXTURE = REPO / "fixtures/uniprot/HUMAN-uniprot.small.gaf"
-SOURCE_SCHEMA = REPO / "sources/uniprot/gaf/uniprot-gaf.schema.yaml"
-TRANSFORM = REPO / "sources/uniprot/gaf/uniprot-gaf.transform.yaml"
+GAF_FIXTURE = REPO_ROOT / "fixtures/uniprot/HUMAN-uniprot.small.gaf"
+SOURCE_SCHEMA = REPO_ROOT / "sources/uniprot/gaf/uniprot-gaf.schema.yaml"
+TRANSFORM = REPO_ROOT / "sources/uniprot/gaf/uniprot-gaf.transform.yaml"
 
 
 def test_gaf_adapter_parses_relation_and_negated(tmp_path):

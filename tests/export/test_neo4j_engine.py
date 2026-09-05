@@ -7,6 +7,9 @@ from pathlib import Path
 from pipeline.export.neo4j.config import Neo4jExportConfig
 from pipeline.export.neo4j.engine import export_neo4j_csv
 
+FIXTURES = Path(__file__).parent / "fixtures"
+
+
 def _write_jsonl(path: Path, records: list[dict]) -> None:
     path.write_text(
         "".join(json.dumps(record) + "\n" for record in records),
@@ -211,8 +214,8 @@ def test_export_neo4j_csv_clears_nodes_csv_dir(tmp_path):
     nodes_csv_dir = tmp_path / "nodes"
     relationships_csv = tmp_path / "relationships.csv"
 
-    nodes_path = Path("pipeline/export/neo4j/tests/fixtures/nodes_valid.jsonl")
-    edges_path = Path("pipeline/export/neo4j/tests/fixtures/edges_valid.jsonl")
+    nodes_path = FIXTURES / "nodes_valid.jsonl"
+    edges_path = FIXTURES / "edges_valid.jsonl"
 
     nodes_csv_dir.mkdir(parents=True)
     canary_file = nodes_csv_dir / "run_1_marker.csv"

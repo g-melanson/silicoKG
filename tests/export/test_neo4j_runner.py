@@ -2,12 +2,9 @@ from __future__ import annotations
 
 import csv
 import json
-from pathlib import Path
 
 from pipeline.export.neo4j.runner import run
 from pipeline.paths import UniversePaths
-
-REPO = Path(__file__).resolve().parents[4]
 
 
 def test_run_writes_manifest_and_csv(tmp_path):

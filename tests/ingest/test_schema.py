@@ -6,10 +6,10 @@ from linkml.validator import Validator
 from linkml.validator.plugins import JsonschemaValidationPlugin
 
 from pipeline.ingest.schema import load_merged_schema, load_source_schema, multivalued_delimiters
+from pipeline.paths import REPO_ROOT
 
-REPO = Path(__file__).resolve().parents[3]
-GENE_INFO_SCHEMA = REPO / "sources/ncbi/ncbi_gene_info/ncbi-gene-info.schema.yaml"
-OBO_GO_SCHEMA = REPO / "sources/obo/go/obo-go.schema.yaml"
+GENE_INFO_SCHEMA = REPO_ROOT / "sources/ncbi/ncbi_gene_info/ncbi-gene-info.schema.yaml"
+OBO_GO_SCHEMA = REPO_ROOT / "sources/obo/go/obo-go.schema.yaml"
 
 
 def test_load_merged_schema_strips_delimiter_extension():

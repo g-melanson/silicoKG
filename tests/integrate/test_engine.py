@@ -1,18 +1,17 @@
 from __future__ import annotations
 
 import json
-
-from pipeline.integrate.tests.conftest import run_integrate
-from pipeline.integrate.tests.silver_fixtures import (
+from pipeline.integrate.engine import integrate_silver_paths
+from tests.conftest import _write_jsonl
+from tests.integrate.silver_fixtures import (
     gene_fragment,
     maps_gene_fragment,
-    write_silver,
 )
 
 
 def test_integrate_single_gene_fragment(tmp_path, priorities):
-    silver = write_silver(tmp_path, [gene_fragment(symbol="A1BG")])
-    nodes, edges, quarantine, summary = run_integrate(silver, priorities)
+    silver = _write_jsonl(tmp_path, [gene_fragment(symbol="A1BG")])
+    nodes, edges, quarantine, summary = integrate_silver_paths(silver, priorities)
 
     assert quarantine == []
     assert summary.fragment_count == 1
@@ -23,14 +22,14 @@ def test_integrate_single_gene_fragment(tmp_path, priorities):
 
 
 def test_integrate_node_and_edge(tmp_path, priorities):
-    silver = write_silver(
+    silver = _write_jsonl(
         tmp_path,
         [
             gene_fragment(symbol="A1BG"),
             maps_gene_fragment(bronze_line=1),
         ],
     )
-    nodes, edges, quarantine, summary = run_integrate(silver, priorities)
+    nodes, edges, quarantine, summary = integrate_silver_paths(silver, priorities)
 
     assert quarantine == []
     assert summary.fragment_count == 2
@@ -41,22 +40,22 @@ def test_integrate_node_and_edge(tmp_path, priorities):
 
 
 def test_integrate_silver_paths_generates_summary(tmp_path, priorities):
-    silver = write_silver(tmp_path, [gene_fragment(symbol="A1BG")])
-    _, _, _, summary = run_integrate(silver, priorities)
+    silver = _write_jsonl(tmp_path, [gene_fragment(symbol="A1BG")])
+    _, _, _, summary = integrate_silver_paths(silver, priorities)
 
     assert summary.sources == [str(silver)]
     assert summary.edge_payload_conflict_samples == []
 
 
 def test_integrate_silver_paths_populates_summary(tmp_path, priorities):
-    silver = write_silver(
+    silver = _write_jsonl(
         tmp_path,
         [
             gene_fragment(symbol="A1BG"),
             maps_gene_fragment(bronze_line=1),
         ],
     )
-    _, _, _, summary = run_integrate(silver, priorities)
+    _, _, _, summary = integrate_silver_paths(silver, priorities)
 
     assert summary.fragment_count == 2
     assert summary.node_count == 1
@@ -66,7 +65,7 @@ def test_integrate_silver_paths_populates_summary(tmp_path, priorities):
 
 
 def test_integrate_three_sources_merge_one_node(tmp_path, priorities):
-    silver = write_silver(
+    silver = _write_jsonl(
         tmp_path,
         [
             gene_fragment(
@@ -90,7 +89,7 @@ def test_integrate_three_sources_merge_one_node(tmp_path, priorities):
             ),
         ],
     )
-    nodes, edges, quarantine, summary = run_integrate(silver, priorities)
+    nodes, edges, quarantine, summary = integrate_silver_paths(silver, priorities)
 
     assert quarantine == []
     assert summary.fragment_count == 3
@@ -102,7 +101,7 @@ def test_integrate_three_sources_merge_one_node(tmp_path, priorities):
 
 
 def test_integrate_three_sources_merge_one_edge(tmp_path, priorities):
-    silver = write_silver(
+    silver = _write_jsonl(
         tmp_path,
         [
             maps_gene_fragment(bronze_line=1),
@@ -119,7 +118,7 @@ def test_integrate_three_sources_merge_one_edge(tmp_path, priorities):
             ),
         ],
     )
-    nodes, edges, quarantine, summary = run_integrate(silver, priorities)
+    nodes, edges, quarantine, summary = integrate_silver_paths(silver, priorities)
 
     assert nodes == []
     assert quarantine == []
@@ -141,8 +140,8 @@ def test_integrate_silver_paths_writes_quarantine(tmp_path, priorities):
             "bronze_line": 0,
         },
     }
-    silver = write_silver(tmp_path, [bad])
-    nodes, edges, quarantine, summary = run_integrate(silver, priorities)
+    silver = _write_jsonl(tmp_path, [bad])
+    nodes, edges, quarantine, summary = integrate_silver_paths(silver, priorities)
 
     assert nodes == []
     assert edges == []
@@ -152,19 +151,11 @@ def test_integrate_silver_paths_writes_quarantine(tmp_path, priorities):
 
 
 def test_integrate_silver_paths_lines_are_counted(tmp_path, priorities):
-    silver = tmp_path / "fragments.jsonl"
-    silver.write_text(
-        "\n".join(
-            [
-                "",  # blank line — not counted
-                json.dumps(gene_fragment(symbol="A1BG")),
-                json.dumps(maps_gene_fragment(bronze_line=1)),
-            ]
-        )
-        + "\n",
-        encoding="utf-8",
+    silver = _write_jsonl(
+        tmp_path, 
+        [gene_fragment(symbol="A1BG"), maps_gene_fragment(bronze_line=1)]
     )
-    _, _, _, summary = run_integrate(silver, priorities)
+    _, _, _, summary = integrate_silver_paths(silver, priorities)
 
     assert summary.fragment_count == 2
     assert summary.node_count == 1

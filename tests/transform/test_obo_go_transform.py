@@ -4,11 +4,11 @@ import json
 from pathlib import Path
 
 from pipeline.ontology.go_uri import go_predicate_label, go_term_node_id, load_go_aspect_map
+from pipeline.paths import REPO_ROOT
 from pipeline.transform.engine import TransformSummary, transform_stream
 
-REPO = Path(__file__).resolve().parents[3]
-SOURCE_SCHEMA = REPO / "sources/obo/go/obo-go.schema.yaml"
-TRANSFORM = REPO / "sources/obo/go/obo-go.transform.yaml"
+SOURCE_SCHEMA = REPO_ROOT / "sources/obo/go/obo-go.schema.yaml"
+TRANSFORM = REPO_ROOT / "sources/obo/go/obo-go.transform.yaml"
 
 
 def test_go_predicate_label_maps_common_properties():
