@@ -1,19 +1,16 @@
 from __future__ import annotations
 from pathlib import Path
 
-from pipeline.paths import REPO_ROOT
 from pipeline.validate.engine import validate_records
 
-from tests.builders.validate import (
+from tests.conftest import _write_jsonl
+from tests.validate.conftest import GENE_INFO_SCHEMA
+from tests.builders.staging import (
     build_staging_set,
     build_mutated_property_record,
     build_misnamed_property_record,
     build_missing_property_record,
 )
-from tests.conftest import _write_jsonl
-
-GENE_INFO_SCHEMA = REPO_ROOT / "sources/ncbi/ncbi_gene_info/ncbi-gene-info.schema.yaml"
-
 
 def test_validate_summary_output(tmp_path: Path):
     test_records = build_staging_set()

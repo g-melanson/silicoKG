@@ -1,9 +1,6 @@
-"""Builders for silver fragment envelopes in integrate engine tests."""
+"""Silver fragment envelope builders for integrate tests."""
 
 from __future__ import annotations
-
-import json
-from pathlib import Path
 
 from pipeline.identity.fragments import build_fragment_envelope
 

@@ -24,3 +24,8 @@ def _write_jsonl(
         encoding="utf-8"
     )
     return path
+
+def _read_jsonl(
+    path: Path,
+) -> list[dict]:
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
