@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timezone
 
+from pipeline.paths import UniversePaths, DEFAULT_PATHS
 from pipeline.ingest.runner import build_adapter
 from pipeline.validate.context import ValidateContext
 from pipeline.validate.engine import validate_records
@@ -12,6 +13,7 @@ def run(
     target_class: str,
     staging_run_id: str,
     run_id: str,
+    paths: UniversePaths = DEFAULT_PATHS
 ):
     adapter = build_adapter(source_name)
     target_class_for_record = getattr(adapter, "target_class_for_record", None)
@@ -21,7 +23,8 @@ def run(
         source=source,
         source_name=source_name,
         target_class=target_class,
-        staging_run_id=staging_run_id
+        staging_run_id=staging_run_id,
+        paths=paths
     )
     ctx.paths.bronze_run_dir(ctx.source_name, ctx.run_id).mkdir(parents=True, exist_ok=True)
 
@@ -73,4 +76,4 @@ def run(
     with ctx.paths.bronze_manifest(ctx.source_name, ctx.run_id).open("w") as f:
         json.dump(bronze_manifest, f, indent=2)
 
-    return
+    return 1 if validation_result.summary.rejected_count > 0 else 0

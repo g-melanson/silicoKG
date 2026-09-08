@@ -102,9 +102,6 @@ class UniversePaths:
     def silver_run_dir(self, source: str, run_id: str) -> Path:
         return self.run_root(run_id) / SILVER / source
 
-    def validate_quarantine_run_dir(self, source: str, run_id: str) -> Path:
-        return self.run_root(run_id) / QUARANTINE / source
-
     def merged_run_dir(self, run_id: str) -> Path:
         return self.run_root(run_id) / MERGED
 
