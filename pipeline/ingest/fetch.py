@@ -10,6 +10,7 @@ import urllib.error
 import urllib.request
 from datetime import UTC, datetime
 from pathlib import Path
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 log = logging.getLogger(__name__)
 
@@ -24,18 +25,24 @@ def _is_fresh(path: Path, ttl_seconds: int) -> bool:
     age = datetime.now(UTC).timestamp() - path.stat().st_mtime
     return age < ttl_seconds
 
-
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=4, max=10),
+)
 def _download(url: str, dest: Path) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
     tmp = dest.with_suffix(dest.suffix + ".part")
     log.info("downloading %s -> %s", url, dest)
     req = urllib.request.Request(url, headers={"User-Agent": _USER_AGENT})
+
     try:
         with urllib.request.urlopen(req, timeout=300) as resp, tmp.open("wb") as out:
             shutil.copyfileobj(resp, out)
+
     except urllib.error.URLError as exc:
         tmp.unlink(missing_ok=True)
         raise RuntimeError(f"download failed for {url!r}: {exc}") from exc
+
     tmp.replace(dest)
 
 

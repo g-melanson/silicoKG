@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import io
 import gzip
+import pytest
 import urllib.request
+import urllib.error
 from pathlib import Path
-
+from tenacity import RetryError
 from pipeline.ingest.fetch import _USER_AGENT, ensure_cached_download
 
 
@@ -68,3 +70,21 @@ def test_download_sends_user_agent(tmp_path: Path, monkeypatch):
     _download("http://example.com/sample.tsv", dest)
     assert dest.read_text(encoding="utf-8") == "ok\n"
     assert captured["user_agent"] == _USER_AGENT
+
+
+def test_download_retries_on_failure(tmp_path: Path, monkeypatch):
+    from pipeline.ingest.fetch import _download
+    calls: list[str] = []
+
+    def fake_urlopen(req, timeout=300):
+        calls.append(req.full_url)
+        raise urllib.error.URLError("connection refused")
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+
+    dest = tmp_path / "sample.tsv"
+    with pytest.raises(RetryError):
+        _download("http://dummy.invalid/file.tsv", dest)
+
+    assert len(calls) == 3
+    assert not dest.exists()
