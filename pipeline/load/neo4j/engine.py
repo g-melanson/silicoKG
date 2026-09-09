@@ -5,18 +5,18 @@ from __future__ import annotations
 import csv
 import logging
 import re
+from tqdm import tqdm
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Iterator, TypeVar
 
-from tqdm import tqdm
+from pipeline.export.neo4j.config import ARRAY_DELIMITER
 
 log = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
-ARRAY_DELIMITER = ";"
 LABEL_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 RELATIONSHIP_TYPE_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
