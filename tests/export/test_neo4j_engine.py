@@ -4,17 +4,11 @@ import csv
 import json
 from pathlib import Path
 
+from tests.conftest import _write_jsonl
 from pipeline.export.neo4j.config import Neo4jExportConfig
 from pipeline.export.neo4j.engine import export_neo4j_csv
 
 FIXTURES = Path(__file__).parent / "fixtures"
-
-
-def _write_jsonl(path: Path, records: list[dict]) -> None:
-    path.write_text(
-        "".join(json.dumps(record) + "\n" for record in records),
-        encoding="utf-8",
-    )
 
 
 def test_export_neo4j_csv_flattens_multiline_property_values(tmp_path):

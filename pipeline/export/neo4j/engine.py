@@ -8,8 +8,10 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterator
-
-from pipeline.export.neo4j.config import Neo4jExportConfig
+from pipeline.export.neo4j.config import (
+    ARRAY_DELIMITER,
+    Neo4jExportConfig
+    )
 from pipeline.export.neo4j.label_map import SoLabelMap
 from pipeline.publish.projection import omit_keys
 from pipeline.progress import iter_indexed_jsonl
@@ -27,7 +29,6 @@ ARRAY_PROPERTY_KEYS = frozenset(
         "pubmed_id",
     }
 )
-ARRAY_DELIMITER = ";"
 
 PartitionKey = tuple[str, tuple[str, ...]]
 
@@ -79,10 +80,14 @@ def _format_cell(value: Any) -> str:
     if value is None:
         return ""
     if isinstance(value, list):
+        for item in value:
+            if ARRAY_DELIMITER in item:
+                raise ValueError(
+                    f"Array element contains delimiter {ARRAY_DELIMITER!r}"
+                )
         text = ARRAY_DELIMITER.join(str(item) for item in value)
     else:
         text = str(value)
-    # neo4j-admin bulk import rejects multiline fields by default.
     return text.replace("\r\n", " ").replace("\n", " ").replace("\r", " ")
 
 

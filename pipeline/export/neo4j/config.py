@@ -15,6 +15,7 @@ from pipeline.export.neo4j.label_map import (
 )
 from pipeline.paths import REPO_ROOT
 
+ARRAY_DELIMITER = "\x1f"
 DBXREF_STUB_LABEL = "DbXref"
 
 
