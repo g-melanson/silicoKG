@@ -56,6 +56,7 @@ classes:
     is_a: GeneOrGeneProduct
     slots:
       - protein_accession_version
+      - aa_sequence
 
   Pseudogene:
     is_a: Gene

@@ -1,0 +1,16 @@
+
+id: https://w3id.org/silicokg/transform/uniprot/swiss-prot-complete
+title: UniProt Swiss-Prot Full dataset
+
+prefixes:
+  silkg: https://w3id.org/silicokg/
+
+class_derivations:
+
+  Protein:
+    populated_from: UniProtSwissProtRow
+    slot_derivations:
+      id:
+        expr: "'silkg:Protein:' + str(tax_id) + ':' + str(accession)"
+      aa_sequence:
+        expr: "sequence"

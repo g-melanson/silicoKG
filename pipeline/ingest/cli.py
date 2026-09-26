@@ -8,6 +8,7 @@ import sys
 from datetime import UTC, datetime
 
 from pipeline.ingest.runner import run
+from pipeline.progress import configure
 
 
 def _default_run_id() -> str:
@@ -45,6 +46,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Enable debug logging",
     )
+    parser.add_argument(
+        "--no-progress",
+        action="store_true",
+        help="Disable tqdm progress bars",
+    )
     return parser
 
 
@@ -54,6 +60,7 @@ def main(argv: list[str] | None = None) -> int:
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(levelname)s %(name)s: %(message)s",
     )
+    configure(enabled=not args.no_progress)
     return run(
         source=args.source,
         source_name=args.source_name,

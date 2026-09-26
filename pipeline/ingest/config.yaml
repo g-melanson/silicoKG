@@ -34,6 +34,13 @@ uniprot-gaf:
   format: gaf
   raw_filename: HUMAN-uniprot.gaf
 
+swiss-prot-complete:
+  url: https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
+  ttl_seconds: 604800
+  format: xml
+  raw_filename: uniprot_sprot.xml.gz
+  decompress: false
+
 obo-so:
   url: http://purl.obolibrary.org/obo/so.owl
   ttl_seconds: 604800
