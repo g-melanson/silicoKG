@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -101,6 +102,7 @@ def run_admin_import(
             argv,
             check=False,
             text=True,
+            capture_output=True,
             env=env,
         )
     except FileNotFoundError as exc:
@@ -127,11 +129,25 @@ def run_admin_import(
         "counts": manifest.get("counts", {}),
     }
     if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout or "").strip()
+        if detail:
+            detail_lines = detail.splitlines()
+            detail = "\n".join(detail_lines[-20:])
         summary["error"] = (
             "neo4j-admin import failed. Stop the database in Neo4j Desktop before "
             "importing. If you see a Java Runtime error, set JAVA_HOME to a JRE 17+ "
             "or use Neo4j Desktop (silicoKG auto-detects its bundled runtime on macOS)."
         )
+        if detail:
+            summary["error_detail"] = detail
+    if completed.stdout:
+        sys.stdout.write(completed.stdout)
+        if not completed.stdout.endswith("\n"):
+            sys.stdout.write("\n")
+    if completed.stderr:
+        sys.stderr.write(completed.stderr)
+        if not completed.stderr.endswith("\n"):
+            sys.stderr.write("\n")
     print(json.dumps(summary, indent=2))
     return completed.returncode
 

@@ -13,10 +13,7 @@ from pipeline.ingest import engine
 from pipeline.ingest.context import IngestContext
 from pipeline.ingest.fetch import ensure_cached_download
 from pipeline.paths import REPO_ROOT
-from sources.registry import (
-    get_adapter, 
-    _load_adapters
-    )
+from sources.registry import get_adapter
 
 log = logging.getLogger(__name__)
 
@@ -49,6 +46,7 @@ def resolve_raw_path(ctx: IngestContext, config: dict[str, Any]) -> Path:
             cache_dir,
             raw_filename,
             ttl_seconds=ttl_seconds,
+            decompress=bool(config.get("decompress", True)),
         )
 
     raise NotImplementedError(f"unsupported url scheme: {url!r}")
@@ -69,7 +67,6 @@ def snapshot_raw_input(ctx: IngestContext, raw_path: Path, config: dict[str, Any
 
 def build_adapter(source_name: str):
     """Return the adapter that parses publisher input for this source."""
-    _load_adapters()
     return get_adapter(source_name)
 
 

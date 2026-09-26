@@ -1,0 +1,17 @@
+id: https://w3id.org/silicokg/source/uniprot/swiss-prot-complete
+name: swiss-prot-complete
+title: UniProt Swiss-Prot Source Schema
+
+prefixes:
+  silkg: https://w3id.org/silicokg/
+default_prefix: silkg
+
+classes:
+  UniProtSwissProtRow:
+    attributes:
+      accession:
+        range: string
+      sequence:
+        range: string
+      tax_id:
+        range: string

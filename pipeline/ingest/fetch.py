@@ -72,6 +72,7 @@ def ensure_cached_download(
     raw_filename: str,
     *,
     ttl_seconds: int = 21600,
+    decompress: bool = True,
 ) -> Path:
     """Return a local path to a cached, parse-ready publisher file."""
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -86,7 +87,11 @@ def ensure_cached_download(
         gz_path = cache_dir / gz_name
         if not _is_fresh(gz_path, ttl_seconds):
             _download(url, gz_path)
-        _decompress_gzip(gz_path, artifact)
+        if decompress:
+            _decompress_gzip(gz_path, artifact)
+            _write_cache_manifest(cache_dir, url=url, artifact=artifact)
+            return artifact
+        artifact = gz_path
     else:
         _download(url, artifact)
 
