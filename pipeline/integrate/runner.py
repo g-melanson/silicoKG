@@ -75,4 +75,6 @@ def run(
         encoding="utf-8",
     )
 
-    return 1 if summary.quarantine_count > 0 else 0
+    if summary.accepted_count == 0:
+        return 1
+    return 0

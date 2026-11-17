@@ -62,6 +62,7 @@ def _write_publish_stream(
                 edges_out.write(outcome.record)
             else:
                 q_edges_out.write(_quarantine_line(outcome))
+
     return summary
 
 
@@ -132,5 +133,6 @@ def run(
         encoding="utf-8",
     )
 
-    quarantine_total = summary.quarantine_node_count + summary.quarantine_edge_count
-    return 1 if quarantine_total > 0 else 0
+    if summary.accepted_count == 0:
+        return 1
+    return 0
