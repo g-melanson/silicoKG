@@ -76,4 +76,6 @@ def run(
     with ctx.paths.bronze_manifest(ctx.source_name, ctx.run_id).open("w") as f:
         json.dump(bronze_manifest, f, indent=2)
 
-    return 1 if validation_result.summary.rejected_count > 0 else 0
+    if validation_result.summary.accepted_count == 0:
+        return 1
+    return 0
