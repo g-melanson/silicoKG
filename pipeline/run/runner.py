@@ -42,14 +42,13 @@ def _run_validate(ctx: PipelineRunContext, spec: SourceSpec, run_id: str) -> int
     adapter = build_adapter(spec.source_name)
     validate_args = ctx.stage_args.get("validate", {})
     staging_run_id = validate_args.get("staging_run_id", run_id)
-    validate_run(
+    return validate_run(
         source=spec.source,
         source_name=spec.source_name,
         target_class=adapter.target_class,
         staging_run_id=staging_run_id,
         run_id=run_id,
     )
-    return 0
 
 
 def _transform_kwargs(
